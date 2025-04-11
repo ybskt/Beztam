@@ -18,21 +18,15 @@ class ExpenseController extends Controller
     {
         $user = Auth::user();
 
-        // Calculate total balance (free amounts from budgets + savings - expenses)
-        $totalBudgetFreeAmount = Budget::where('user_id', $user->id)->sum('free_amount');
-        $totalMonthlyBudgetFreeAmount = MonthlyBudget::where('user_id', $user->id)
-            ->sum('amount') * MonthlyBudget::where('user_id', $user->id)->sum('occurrences');
-        $totalSavings = Saving::where('user_id', $user->id)->sum('amount');
-        $totalExpenses = Expense::where('user_id', $user->id)->sum('amount');
-        
-        $totalBalance = ($totalBudgetFreeAmount + $totalMonthlyBudgetFreeAmount + $totalSavings) - $totalExpenses;
-        
-        // Calculate free margin (free amounts - expenses)
-        $freeMargin = ($totalBudgetFreeAmount + $totalMonthlyBudgetFreeAmount) - $totalExpenses;
-        
-        // Calculate savings rate
-        $totalIncome = $totalBudgetFreeAmount + $totalMonthlyBudgetFreeAmount;
-        $savingsRate = $totalIncome > 0 ? round(($totalSavings / $totalIncome) * 100, 2) : 0;
+         // Calculate total balance (free amounts from budgets + savings - expenses)
+         $totalBudgetFreeAmount = Budget::where('user_id', $user->id)->sum('free_amount');
+         $totalSavings = Saving::where('user_id', $user->id)->sum('amount');
+         $totalExpenses = Expense::where('user_id', $user->id)->sum('amount');
+         
+         $totalBalance = ($totalBudgetFreeAmount + $totalSavings) - $totalExpenses;
+         
+         // Calculate free margin (free amounts - expenses)
+         $freeMargin = $totalBudgetFreeAmount;
 
         return inertia('Dashboard/Expenses', [
             'categories' => Category::where('user_id', $user->id)->get(),
@@ -44,9 +38,9 @@ class ExpenseController extends Controller
             'monthlyExpenses' => MonthlyExpense::with('category')
                 ->where('user_id', $user->id)
                 ->get(),
-            'totalBalance' => $totalBalance,
-            'freeMargin' => $freeMargin,
-            'savingsRate' => $savingsRate
+            'totalBalance' => (float)$totalBalance,
+            'freeMargin' => (float)$freeMargin,
+            'totalSavings' => (float)$totalSavings
         ]);
     }
 

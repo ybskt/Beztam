@@ -13,7 +13,7 @@
       </div>
       <div class="bg-white rounded-xl shadow-sm p-4 md:p-6 text-center">
         <p class="text-[#5AE4A8] text-sm font-bold">Epargne totale</p>
-        <p class="mt-2 text-lg md:text-xl font-semibold">{{ savingsRate }}%</p>
+        <p class="mt-2 text-lg md:text-xl font-semibold">{{ formatCurrency(totalSavings) }}</p>
       </div>
     </div>
 
@@ -278,7 +278,7 @@ const props = defineProps({
   monthlyExpenses: Array,
   totalBalance: Number,
   freeMargin: Number,
-  savingsRate: Number
+  totalSavings: Number
 });
 
 const form = useForm({

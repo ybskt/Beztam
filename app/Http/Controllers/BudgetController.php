@@ -18,15 +18,13 @@ class BudgetController extends Controller
         
         // Calculate total balance (free amounts from budgets + savings - expenses)
         $totalBudgetFreeAmount = Budget::where('user_id', $user->id)->sum('free_amount');
-        $totalMonthlyBudgetFreeAmount = MonthlyBudget::where('user_id', $user->id)
-            ->sum('amount') * MonthlyBudget::where('user_id', $user->id)->sum('occurrences');
         $totalSavings = Saving::where('user_id', $user->id)->sum('amount');
         $totalExpenses = Expense::where('user_id', $user->id)->sum('amount');
         
-        $totalBalance = ($totalBudgetFreeAmount + $totalMonthlyBudgetFreeAmount + $totalSavings) - $totalExpenses;
+        $totalBalance = ($totalBudgetFreeAmount + $totalSavings) - $totalExpenses;
         
         // Calculate free margin (free amounts - expenses)
-        $freeMargin = ($totalBudgetFreeAmount + $totalMonthlyBudgetFreeAmount) - $totalExpenses;
+        $freeMargin = $totalBudgetFreeAmount;
         
         // Recent budgets (last 7) with formatted dates
         $recentBudgets = Budget::where('user_id', $user->id)
@@ -42,12 +40,11 @@ class BudgetController extends Controller
         $monthlyBudgets = MonthlyBudget::where('user_id', $user->id)->get();
 
         return inertia('Dashboard/Budgets', [
-            'totalBalance' => $totalBalance,
-            'totalSavings' => $totalSavings,
-            'savingsRate' => $user->savings_rate,
+            'totalBalance' => (float)$totalBalance,
+            'totalSavings' => (float)$totalSavings,
             'recentBudgets' => $recentBudgets,
             'monthlyBudgets' => $monthlyBudgets,
-            'freeMargin' => $freeMargin > 0 ? $freeMargin : 0,
+            'freeMargin' => (float)$freeMargin > 0 ? $freeMargin : 0,
         ]);
     }
 
