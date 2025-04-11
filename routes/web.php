@@ -6,6 +6,8 @@ use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\SavingsController;
 use App\Http\Controllers\BudgetController;
+use App\Http\Controllers\ExpenseController;
+use App\Http\Controllers\CategoriesController;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
 
@@ -67,10 +69,12 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/monthly-budgets/{id}', [BudgetController::class, 'destroyMonthly']);
 
     // Expense Tracking
-    Route::get('/dashboard/expenses', function () {
-        return Inertia::render('Dashboard/Expenses');
-    })->name('expenses');
-
+    Route::get('/dashboard/expenses', [ExpenseController::class, 'index'])->name('expenses');
+    Route::post('/dashboard/expenses', [ExpenseController::class, 'store'])->name('expenses.store');
+    Route::put('/dashboard/expenses/{expense}', [ExpenseController::class, 'update'])->name('expenses.update');
+    Route::put('/dashboard/expenses/monthly/{monthlyExpense}', [ExpenseController::class, 'updateMonthly'])->name('expenses.monthly.update');
+    Route::delete('/dashboard/expenses/{expense}', [ExpenseController::class, 'destroy'])->name('expenses.destroy');
+    Route::delete('/dashboard/expenses/monthly/{monthlyExpense}', [ExpenseController::class, 'destroyMonthly'])->name('expenses.monthly.destroy');
     // Savings Goals
     Route::get('/dashboard/savings', [SavingsController::class, 'index'])->name('savings');
     Route::post('/savings', [SavingsController::class, 'store']);
@@ -78,9 +82,10 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/savings/transfer', [SavingsController::class, 'transferToMargin']);
 
     // Categories Management
-    Route::get('/dashboard/categories', function () {
-        return Inertia::render('Dashboard/Categories');
-    })->name('categories');
+    Route::get('/dashboard/categories', [CategoriesController::class, 'index'])->name('categories');
+    Route::post('/dashboard/categories', [CategoriesController::class, 'store'])->name('categories.store');
+    Route::put('/dashboard/categories/{category}', [CategoriesController::class, 'update'])->name('categories.update');
+    Route::delete('/dashboard/categories/{category}', [CategoriesController::class, 'destroy'])->name('categories.destroy');
 
     // Transaction History
     Route::get('/dashboard/history', function () {
