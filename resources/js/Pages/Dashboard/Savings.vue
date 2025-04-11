@@ -78,11 +78,6 @@
                 </tr>
               </tbody>
             </table>
-            <div class="mt-4 md:mt-6 flex justify-center">
-              <Link :href="route('savings.all')" class="text-sm font-medium text-[#10B981] hover:text-[#059669] transition duration-200">
-                Voir toutes les épargnes →
-              </Link>
-            </div>
           </div>
           <div v-else class="text-center py-4 text-gray-500">
             Pas d'épargnes enregistrées
