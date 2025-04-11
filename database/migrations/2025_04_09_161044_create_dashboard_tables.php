@@ -8,12 +8,15 @@ return new class extends Migration
 {
     public function up()
     {
+        // Users table (already exists, but we'll reference it)
+        
         // Budgets table (one-time budgets)
         Schema::create('budgets', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->string('name');
             $table->decimal('amount', 10, 2);
+            $table->decimal('free_amount', 10, 2)->default(0);
             $table->date('date');
             $table->text('description')->nullable();
             $table->timestamps();
@@ -26,8 +29,8 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->string('name');
-            $table->unsignedTinyInteger('day_of_month')->comment('Day of month when budget is applied');
             $table->decimal('amount', 10, 2);
+            $table->unsignedTinyInteger('day_of_month')->comment('Day of month when budget is applied');
             $table->text('description')->nullable();
             $table->timestamps();
             
@@ -56,8 +59,7 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->timestamps();
             
-            $table->index('user_id');
-            $table->index('category_id');
+            $table->index(['user_id', 'category_id']);
         });
 
         // Monthly expenses table
@@ -66,13 +68,12 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->foreignId('category_id')->constrained()->onDelete('cascade');
             $table->string('name');
-            $table->unsignedTinyInteger('day_of_month')->comment('Day of month when expense occurs');
             $table->decimal('amount', 10, 2);
+            $table->unsignedTinyInteger('day_of_month')->comment('Day of month when expense occurs');
             $table->text('description')->nullable();
             $table->timestamps();
             
-            $table->index('user_id');
-            $table->index('category_id');
+            $table->index(['user_id', 'category_id']);
         });
 
         // Savings table
@@ -90,7 +91,6 @@ return new class extends Migration
 
     public function down()
     {
-        // Drop tables in reverse order to respect foreign key constraints
         Schema::dropIfExists('savings');
         Schema::dropIfExists('monthly_expenses');
         Schema::dropIfExists('expenses');

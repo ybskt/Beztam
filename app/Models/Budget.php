@@ -2,24 +2,37 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class Budget extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
-        'user_id', 'name', 'amount', 'date', 
-        'description', 'is_monthly', 'apply_saving'
+        'user_id',
+        'name',
+        'amount',
+        'free_amount',
+        'date',
+        'description'
     ];
 
-    public function user(): BelongsTo
+    protected $casts = [
+        'date' => 'date',
+        'amount' => 'decimal:2',
+        'free_amount' => 'decimal:2'
+    ];
+
+    public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-    public function recurrences(): MorphMany
+    public static function calculateFreeAmount($amount, $savingsRate, $applySaving)
     {
-        return $this->morphMany(MonthlyRecurrence::class, 'recurrable');
+        return $applySaving 
+            ? $amount * (1 - ($savingsRate / 100))
+            : $amount;
     }
 }

@@ -33,7 +33,7 @@
             <div class="flex flex-col sm:flex-row sm:items-center">
               <label class="text-sm font-medium text-gray-700 mb-1 sm:mb-0 sm:w-1/3 whitespace-nowrap">Montant* :</label>
               <div class="flex-1 sm:w-2/3 flex gap-2">
-                <input v-model="form.amount" type="number" class="w-3/4 border-2 rounded-lg p-2 border-[#D1FAE5] bg-slate-50 focus:outline-none focus:ring-2 focus:ring-[#10B981] focus:border-transparent">
+                <input v-model="form.amount" type="number" step="0.01" class="w-3/4 border-2 rounded-lg p-2 border-[#D1FAE5] bg-slate-50 focus:outline-none focus:ring-2 focus:ring-[#10B981] focus:border-transparent">
                 <input type="text" value="DH" readonly class="w-1/4 border-2 rounded-lg p-2 border-[#D1FAE5] bg-slate-50 text-center">
               </div>
             </div>
@@ -78,6 +78,11 @@
                 </tr>
               </tbody>
             </table>
+            <div  class="mt-4 md:mt-6 flex justify-center">
+                <Link :href="route('history')" class="text-sm font-medium text-[#10B981] hover:text-[#059669] transition duration-200">
+                  Voir toutes les épargnes →
+                </Link>
+              </div>
           </div>
           <div v-else class="text-center py-4 text-gray-500">
             Pas d'épargnes enregistrées
@@ -98,7 +103,7 @@
             <div class="flex flex-col sm:flex-row sm:items-center">
               <label class="text-sm font-medium text-gray-700 mb-1 sm:mb-0 sm:w-1/3 whitespace-nowrap">Pourcentage :</label>
               <div class="flex-1 sm:w-2/3 flex gap-2">
-                <input v-model="rateForm.percentage" type="number" class="w-3/4 border-2 rounded-lg p-2 border-[#D1FAE5] bg-slate-50 focus:outline-none focus:ring-2 focus:ring-[#10B981] focus:border-transparent">
+                <input v-model.number="rateForm.percentage" type="number" min="0" max="100" class="w-3/4 border-2 rounded-lg p-2 border-[#D1FAE5] bg-slate-50 focus:outline-none focus:ring-2 focus:ring-[#10B981] focus:border-transparent">
                 <input type="text" value="%" readonly class="w-1/4 border-2 rounded-lg p-2 border-[#D1FAE5] bg-slate-50 text-center">
               </div>
             </div>
@@ -121,7 +126,7 @@
             <div class="flex flex-col sm:flex-row sm:items-center">
               <label class="text-sm font-medium text-gray-700 mb-1 sm:mb-0 sm:w-1/3 whitespace-nowrap">Montant :</label>
               <div class="flex-1 sm:w-2/3 flex gap-2">
-                <input v-model="transferForm.amount" type="number" class="w-3/4 border-2 rounded-lg p-2 border-[#D1FAE5] bg-slate-50 focus:outline-none focus:ring-2 focus:ring-[#10B981] focus:border-transparent">
+                <input v-model.number="transferForm.amount" type="number" step="0.01" min="0" class="w-3/4 border-2 rounded-lg p-2 border-[#D1FAE5] bg-slate-50 focus:outline-none focus:ring-2 focus:ring-[#10B981] focus:border-transparent">
                 <input type="text" value="DH" readonly class="w-1/4 border-2 rounded-lg p-2 border-[#D1FAE5] bg-slate-50 text-center">
               </div>
             </div>
@@ -143,82 +148,131 @@ import { reactive } from 'vue';
 import DashLayout from '@/Layouts/DashLayout.vue';
 
 const props = defineProps({
-  totalBalance: Number,
-  totalSavings: Number,
-  savingsRate: Number,
-  recentSavings: Array
+    totalBalance: {
+        type: Number,
+        required: true,
+        default: 0
+    },
+    totalSavings: {
+        type: Number,
+        required: true,
+        default: 0
+    },
+    savingsRate: {
+        type: Number,
+        required: true,
+        default: 0
+    },
+    recentSavings: {
+        type: Array,
+        default: () => []
+    }
 });
 
 const form = reactive({
-  name: '',
-  amount: '',
-  date: '',
-  description: ''
+    name: '',
+    amount: '',
+    date: '',
+    description: ''
 });
 
 const rateForm = reactive({
-  percentage: props.savingsRate
+    percentage: props.savingsRate
 });
 
 const transferForm = reactive({
-  amount: ''
+    amount: ''
 });
 
 const formatCurrency = (amount) => {
-  return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'MAD' }).format(amount);
+    amount = typeof amount === 'number' ? amount : parseFloat(amount) || 0;
+    return new Intl.NumberFormat('fr-FR', { 
+        style: 'currency', 
+        currency: 'MAD',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    }).format(amount);
 };
 
 const submitSavings = async () => {
-  try {
-      if (!form.name || !form.amount) {
-          alert('Le nom et le montant sont obligatoires');
-          return;
-      }
-      
-      if (form.amount <= 0) {
-          alert('Le montant doit être positif');
-          return;
-      }
-      
-      if (!form.date) {
-          form.date = new Date().toISOString().split('T')[0];
-      }
-
-      const response = await axios.post('/dashboard/savings', form);
-      window.location.reload();
-  } catch (error) {
-      console.error(error);
-      alert('Une erreur est survenue lors de l\'ajout');
-  }
+    try {
+        if (!form.name.trim()) {
+            alert('Le nom est obligatoire');
+            return;
+        }
+        
+        const amount = parseFloat(form.amount);
+        if (isNaN(amount)) {
+            alert('Montant invalide');
+            return;
+        }
+        
+        if (amount <= 0) {
+            alert('Le montant doit être positif');
+            return;
+        }
+        
+        const response = await axios.post('/savings', {
+            name: form.name.trim(),
+            amount: amount,
+            date: form.date || new Date().toISOString().split('T')[0],
+            description: form.description.trim()
+        });
+        
+        form.name = '';
+        form.amount = '';
+        form.date = '';
+        form.description = '';
+        
+        window.location.reload();
+    } catch (error) {
+        console.error('Error adding savings:', error);
+        alert('Erreur lors de l\'ajout: ' + (error.response?.data?.message || 'Veuillez réessayer'));
+    }
 };
 
 const updateSavingsRate = async () => {
-  try {
-      if (rateForm.percentage < 0 || rateForm.percentage > 100) {
-          alert('Le pourcentage doit être entre 0 et 100');
-          return;
-      }
+    try {
+        const percentage = parseInt(rateForm.percentage);
+        if (isNaN(percentage)) {
+            alert('Pourcentage invalide');
+            return;
+        }
+        
+        if (percentage < 0 || percentage > 100) {
+            alert('Le pourcentage doit être entre 0 et 100');
+            return;
+        }
 
-      const response = await axios.post('/dashboard/savings/rate', rateForm);
-      window.location.reload();
-  } catch (error) {
-      console.error(error);
-      alert('Une erreur est survenue lors de la mise à jour');
-  }
+        await axios.post('/savings/rate', { percentage });
+        window.location.reload();
+    } catch (error) {
+        console.error('Error updating rate:', error);
+        alert('Erreur lors de la mise à jour du taux');
+    }
 };
 
 const transferToMargin = async () => {
-  try {
-      if (!transferForm.amount || transferForm.amount <= 0) {
-          alert('Le montant doit être positif');
-          return;
-      }
+    try {
+        const amount = parseFloat(transferForm.amount);
+        if (isNaN(amount)) {
+            alert('Montant invalide');
+            return;
+        }
+        
+        if (amount <= 0) {
+            alert('Le montant doit être positif');
+            return;
+        }
 
-      const response = await axios.post('/dashboard/savings/transfer', transferForm);
-      window.location.reload();
-  } catch (error) {
-      console.error(error);
-      alert(error.response?.data?.message || 'Le montant dépasse votre épargne totale');
-  }
+        await axios.post('/savings/transfer', { amount });
+        transferForm.amount = '';
+        window.location.reload();
+    } catch (error) {
+        console.error('Transfer error:', error);
+        const message = error.response?.data?.message || 
+                       (error.response?.status === 422 ? 'Montant invalide' : 'Erreur de transfert');
+        alert(message);
+    }
 };
 </script>

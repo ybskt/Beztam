@@ -4,6 +4,8 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\SavingsController;
+use App\Http\Controllers\BudgetController;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
 
@@ -26,16 +28,13 @@ Route::get('/contact', function () {
 
 // Auth Routes
 Route::middleware('guest')->group(function () {
-    // Registration Routes
     Route::get('register', [RegisteredUserController::class, 'create'])->name('register');
     Route::post('register', [RegisteredUserController::class, 'store']);
-    
-    // Login Routes
     Route::get('login', [AuthenticatedSessionController::class, 'create'])->name('login');
     Route::post('login', [AuthenticatedSessionController::class, 'store']);
 });
 
-// Email Verification Routes (no visual pages needed)
+// Email Verification Routes
 Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
     $request->fulfill();
     return redirect()->route('dashboard');
@@ -46,28 +45,26 @@ Route::post('/email/verification-notification', function (Request $request) {
     return back()->with('message', 'Verification link sent!');
 })->middleware(['auth', 'throttle:6,1'])->name('verification.send');
 
-// This route is needed for Laravel's verification system but won't be displayed
 Route::get('/email/verify', function () {
     return redirect()->route('dashboard');
 })->middleware('auth')->name('verification.notice');
 
-// Protected Routes (require authentication)
+// Protected Routes
 Route::middleware('auth')->group(function () {
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
-    // Add other protected routes here
 });
 
 // Authenticated Dashboard Routes
 Route::middleware(['auth'])->group(function () {
-    // Dashboard Home - no email verification required
     Route::get('/dashboard', function () {
         return Inertia::render('Dashboard/Dashboard');
     })->name('dashboard');
 
     // Budget Management
-    Route::get('/dashboard/budgets', function () {
-        return Inertia::render('Dashboard/Budgets');
-    })->name('budgets');
+    Route::get('/dashboard/budgets', [BudgetController::class, 'index'])->name('budgets');
+    Route::post('/budgets', [BudgetController::class, 'store']);
+    Route::post('/budgets/process-monthly', [BudgetController::class, 'processMonthlyBudgets']);
+    Route::delete('/monthly-budgets/{id}', [BudgetController::class, 'destroyMonthly']);
 
     // Expense Tracking
     Route::get('/dashboard/expenses', function () {
@@ -75,9 +72,10 @@ Route::middleware(['auth'])->group(function () {
     })->name('expenses');
 
     // Savings Goals
-    Route::get('/dashboard/savings', function () {
-        return Inertia::render('Dashboard/Savings');
-    })->name('savings');
+    Route::get('/dashboard/savings', [SavingsController::class, 'index'])->name('savings');
+    Route::post('/savings', [SavingsController::class, 'store']);
+    Route::post('/savings/rate', [SavingsController::class, 'updateRate']);
+    Route::post('/savings/transfer', [SavingsController::class, 'transferToMargin']);
 
     // Categories Management
     Route::get('/dashboard/categories', function () {
@@ -89,14 +87,8 @@ Route::middleware(['auth'])->group(function () {
         return Inertia::render('Dashboard/History');
     })->name('history');
 
-     // Transaction History
-     Route::get('/dashboard/settings', function () {
+    // Settings
+    Route::get('/dashboard/settings', function () {
         return Inertia::render('Dashboard/Settings');
     })->name('settings');
-
-    // Logout Route
-    Route::post('/logout', function () {
-        auth()->logout();
-        return redirect()->route('home');
-    })->name('logout');
 });

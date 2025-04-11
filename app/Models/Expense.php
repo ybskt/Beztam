@@ -3,28 +3,30 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class Expense extends Model
 {
     protected $fillable = [
-        'user_id', 'category_id', 'name', 'amount',
-        'date', 'description', 'is_monthly'
+        'user_id',
+        'category_id',
+        'name',
+        'amount',
+        'date',
+        'description'
     ];
 
-    public function user(): BelongsTo
+    protected $casts = [
+        'amount' => 'decimal:2',
+        'date' => 'date'
+    ];
+
+    public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-    public function category(): BelongsTo
+    public function category()
     {
         return $this->belongsTo(Category::class);
-    }
-
-    public function recurrences(): MorphMany
-    {
-        return $this->morphMany(MonthlyRecurrence::class, 'recurrable');
     }
 }

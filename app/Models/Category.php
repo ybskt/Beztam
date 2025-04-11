@@ -3,14 +3,31 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Category extends Model
 {
-    protected $fillable = ['name', 'limit_amount'];
+    protected $fillable = [
+        'user_id',
+        'name',
+        'limit_amount'
+    ];
 
-    public function expenses(): HasMany
+    protected $casts = [
+        'limit_amount' => 'decimal:2'
+    ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function expenses()
     {
         return $this->hasMany(Expense::class);
+    }
+
+    public function monthlyExpenses()
+    {
+        return $this->hasMany(MonthlyExpense::class);
     }
 }

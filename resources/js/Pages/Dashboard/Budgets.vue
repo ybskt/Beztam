@@ -1,5 +1,21 @@
 <template>
   <DashLayout>
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6 mb-6">
+      <div class="bg-white rounded-xl shadow-sm p-4 md:p-6 text-center">
+        <p class="text-[#5AE4A8] text-sm font-bold">Balance Total</p>
+        <p class="mt-2 text-lg md:text-xl font-semibold">{{ formatCurrency(totalBalance) }}</p>
+      </div>
+      <div class="bg-white rounded-xl shadow-sm p-4 md:p-6 text-center">
+        <p class="text-[#5AE4A8] text-sm font-bold">Marge libre</p>
+        <p class="mt-2 text-lg md:text-xl font-semibold">{{ formatCurrency(freeMargin) }}</p>
+      </div>
+      <div class="bg-white rounded-xl shadow-sm p-4 md:p-6 text-center">
+        <p class="text-[#5AE4A8] text-sm font-bold">Epargne totale</p>
+        <p class="mt-2 text-lg md:text-xl font-semibold">{{ savingsRate }}%</p>
+      </div>
+    </div>
+
     <!-- Top Grid Section -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
       <!-- Ajouter Budget -->
@@ -13,19 +29,22 @@
               <label class="text-sm font-medium text-gray-700 mb-1 sm:mb-0 sm:w-1/3 whitespace-nowrap">Nom du budget* :</label>
               <input v-model="form.name" type="text" class="flex-1 sm:w-2/3 border-2 rounded-lg p-2 border-[#D1FAE5] bg-slate-50 focus:outline-none focus:ring-2 focus:ring-[#10B981] focus:border-transparent">
             </div>
+
             <!-- Total Amount -->
             <div class="flex flex-col sm:flex-row sm:items-center">
               <label class="text-sm font-medium text-gray-700 mb-1 sm:mb-0 sm:w-1/3 whitespace-nowrap">Montant Total* :</label>
               <div class="flex-1 sm:w-2/3 flex gap-2">
-                <input v-model="form.amount" type="number" class="w-3/4 border-2 rounded-lg p-2 border-[#D1FAE5] bg-slate-50 focus:outline-none focus:ring-2 focus:ring-[#10B981] focus:border-transparent">
+                <input v-model="form.amount" type="number" step="0.01" class="w-3/4 border-2 rounded-lg p-2 border-[#D1FAE5] bg-slate-50 focus:outline-none focus:ring-2 focus:ring-[#10B981] focus:border-transparent">
                 <input type="text" value="DH" readonly class="w-1/4 border-2 rounded-lg p-2 border-[#D1FAE5] bg-slate-50 text-center">
               </div>
             </div>
+
             <!-- Date -->
             <div class="flex flex-col sm:flex-row sm:items-center">
               <label class="text-sm font-medium text-gray-700 mb-1 sm:mb-0 sm:w-1/3 whitespace-nowrap">Date:</label>
               <input v-model="form.date" type="date" class="flex-1 sm:w-2/3 border-2 rounded-lg p-2 border-[#D1FAE5] bg-slate-50 focus:outline-none focus:ring-2 focus:ring-[#10B981] focus:border-transparent">
             </div>
+
             <!-- Checkboxes -->
             <div class="flex flex-col sm:flex-row sm:items-start">
               <label class="font-medium text-gray-700 mb-1 sm:mb-0 sm:w-1/3"></label>
@@ -40,12 +59,14 @@
                 </label>
               </div>
             </div>
+
             <!-- Description -->
             <div class="flex flex-col sm:flex-row">
               <label class="text-sm font-medium text-gray-700 mb-1 sm:mb-0 sm:w-1/3 sm:pt-2 whitespace-nowrap">Description:</label>
               <textarea v-model="form.description" class="flex-1 sm:w-2/3 border-2 rounded-lg p-2 border-[#D1FAE5] bg-slate-50 focus:outline-none focus:ring-2 focus:ring-[#10B981] focus:border-transparent h-20 md:h-24 resize-none"></textarea>
             </div>
           </div>
+
           <div class="mt-4 md:mt-6 flex justify-center sm:justify-end">
             <button type="submit" class="px-6 md:px-8 py-2 bg-[#86EFAC] hover:bg-[#4ADE80] border-[#86EFAC] text-black font-semibold rounded-lg border-2 hover:border-black transition-all w-full sm:w-auto">
               Ajouter
@@ -59,7 +80,7 @@
         <h2 class="text-lg md:text-xl font-bold text-[#1E293B] mb-3 md:mb-4">Budgets ajoutés récemment</h2>
         <hr class="border-t-2 border-gray-200 mb-4 md:mb-6">
         <div class="overflow-hidden">
-          <div>
+          <div v-if="recentBudgets.length > 0">
             <table class="min-w-full">
               <thead>
                 <tr class="text-left text-sm font-medium text-gray-700 border-b-[0.5px] border-b-[#5AE4A8]">
@@ -71,16 +92,19 @@
               <tbody class="divide-y divide-[#D1FAE5]">
                 <tr v-for="budget in recentBudgets" :key="budget.id" class="border-b-[0.5px] border-b-[#5AE4A8]">
                   <td class="py-3 px-2 md:px-4 text-sm font-medium">{{ budget.name }}</td>
-                  <td class="py-3 px-2 md:px-4 text-sm font-medium text-center">{{ budget.date }}</td>
-                  <td class="py-3 px-2 md:px-4 text-sm font-medium text-center">{{ budget.amount }} DH</td>
+                  <td class="py-3 px-2 md:px-4 text-sm font-medium text-center">{{ formatDate(budget.date) }}</td>
+                  <td class="py-3 px-2 md:px-4 text-sm font-medium text-center">{{ formatCurrency(budget.amount) }} DH</td>
                 </tr>
               </tbody>
             </table>
+            <div class="mt-4 md:mt-6 flex justify-center">
+              <Link :href="route('history')" class="text-sm font-medium text-[#10B981] hover:text-[#059669] transition duration-200">
+                Voir tous les budgets →
+              </Link>
+            </div>
           </div>
-          <div class="mt-4 md:mt-6 flex justify-center">
-            <Link href="#" class="text-sm font-medium text-[#10B981] hover:text-[#059669] transition duration-200">
-              Voir tous les budgets →
-            </Link>
+          <div v-else class="text-center py-4 text-gray-500">
+            Pas de budgets enregistrés
           </div>
         </div>
       </div>
@@ -90,14 +114,14 @@
     <div class="bg-white rounded-xl shadow-sm p-4 md:p-6 mt-4 md:mt-6">
       <h2 class="text-lg md:text-xl font-bold text-[#1E293B] mb-3 md:mb-4">Budget Mensuel</h2>
       <hr class="border-t-2 border-gray-200 mb-4 md:mb-6">
-      
+
       <!-- Table for md screens and larger -->
       <div class="hidden md:block">
         <table class="min-w-full">
           <thead>
             <tr class="text-left text-sm font-medium text-gray-700 border-b-[0.5px] border-b-[#5AE4A8]">
               <th class="py-2 px-4">Nom</th>
-              <th class="py-2 px-4 text-center">Date</th>
+              <th class="py-2 px-4 text-center">Jour du mois</th>
               <th class="py-2 px-4 text-center">Montant</th>
               <th class="py-2 px-4 text-center">Occurrences</th>
               <th class="py-2 px-4 text-center">Actions</th>
@@ -106,8 +130,8 @@
           <tbody class="divide-y divide-[#D1FAE5]">
             <tr v-for="monthlyBudget in monthlyBudgets" :key="monthlyBudget.id" class="border-b-[0.5px] border-b-[#5AE4A8]">
               <td class="py-2 px-4 text-sm font-medium">{{ monthlyBudget.name }}</td>
-              <td class="py-2 px-4 text-sm font-medium text-center">{{ monthlyBudget.date }}</td>
-              <td class="py-2 px-4 text-sm font-medium text-center">{{ monthlyBudget.amount }} DH</td>
+              <td class="py-2 px-4 text-sm font-medium text-center">{{ monthlyBudget.day_of_month }}</td>
+              <td class="py-2 px-4 text-sm font-medium text-center">{{ formatCurrency(monthlyBudget.amount) }} DH</td>
               <td class="py-2 px-4 text-sm font-medium text-center">{{ monthlyBudget.occurrences }}</td>
               <td class="py-2 px-4 text-sm font-medium text-center">
                 <div class="flex justify-center space-x-2">
@@ -123,7 +147,7 @@
           </tbody>
         </table>
       </div>
-      
+
       <!-- Cards for small screens -->
       <div class="md:hidden space-y-4">
         <div v-for="monthlyBudget in monthlyBudgets" :key="monthlyBudget.id" class="bg-white border border-[#D1FAE5] rounded-lg shadow-sm p-4">
@@ -131,11 +155,11 @@
             <div>
               <h3 class="font-semibold text-[#1E293B]">{{ monthlyBudget.name }}</h3>
             </div>
-            <span class="font-bold text-[#1E293B]">{{ monthlyBudget.amount }} DH</span>
+            <span class="font-bold text-[#1E293B]">{{ formatCurrency(monthlyBudget.amount) }} DH</span>
           </div>
           <div class="flex justify-between items-center text-sm text-gray-600 mb-3">
             <div>
-              <div>Date: <span class="font-medium">{{ monthlyBudget.date }}</span></div>
+              <div>Jour: <span class="font-medium">{{ monthlyBudget.day_of_month }}</span></div>
               <div>Occurrences: <span class="font-medium">{{ monthlyBudget.occurrences }}</span></div>
             </div>
           </div>
@@ -155,36 +179,125 @@
 
 <script setup>
 import { Link } from '@inertiajs/vue3';
-import DashLayout from '@/Layouts/DashLayout.vue';
 import { reactive } from 'vue';
+import DashLayout from '@/Layouts/DashLayout.vue';
 
 const props = defineProps({
-  recentBudgets: Array,
-  monthlyBudgets: Array
+    totalBalance: {
+        type: Number,
+        required: true,
+        default: 0
+    },
+    totalSavings: {
+        type: Number,
+        required: true,
+        default: 0
+    },
+    savingsRate: {
+        type: Number,
+        required: true,
+        default: 0
+    },
+    recentBudgets: {
+        type: Array,
+        default: () => []
+    },
+    monthlyBudgets: {
+        type: Array,
+        default: () => []
+    },
+    freeMargin: {
+        type: Number,
+        default: 0
+    }
 });
 
 const form = reactive({
-  name: '',
-  amount: '',
-  date: '',
-  is_monthly: false,
-  apply_saving: false,
-  description: ''
+    name: '',
+    amount: '',
+    date: '',
+    description: '',
+    is_monthly: false,
+    apply_saving: false
 });
 
-const submitBudget = () => {
-  // Handle form submission
-  console.log('Form submitted:', form);
-  // You would typically use Inertia.post here
+const formatCurrency = (amount) => {
+    amount = typeof amount === 'number' ? amount : parseFloat(amount) || 0;
+    return new Intl.NumberFormat('fr-FR', {
+        style: 'currency',
+        currency: 'MAD',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    }).format(amount);
+};
+
+const formatDate = (dateString) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}-${month}-${year}`;
+};
+
+const submitBudget = async () => {
+    try {
+        if (!form.name.trim()) {
+            alert('Le nom est obligatoire');
+            return;
+        }
+        
+        const amount = parseFloat(form.amount);
+        if (isNaN(amount)) {
+            alert('Montant invalide');
+            return;
+        }
+        
+        if (amount <= 0) {
+            alert('Le montant doit être positif');
+            return;
+        }
+        
+        const response = await axios.post('/budgets', {
+            name: form.name.trim(),
+            amount: amount,
+            date: form.date || new Date().toISOString().split('T')[0],
+            description: form.description.trim(),
+            is_monthly: form.is_monthly,
+            apply_saving: form.apply_saving
+        });
+        
+        // Reset form
+        form.name = '';
+        form.amount = '';
+        form.date = '';
+        form.description = '';
+        form.is_monthly = false;
+        form.apply_saving = false;
+        
+        window.location.reload();
+    } catch (error) {
+        console.error('Error adding budget:', error);
+        alert('Erreur lors de l\'ajout: ' + (error.response?.data?.message || 'Veuillez réessayer'));
+    }
 };
 
 const editBudget = (id) => {
-  // Handle edit
-  console.log('Edit budget with id:', id);
+    // Will be implemented later
+    console.log('Edit budget:', id);
 };
 
-const deleteBudget = (id) => {
-  // Handle delete
-  console.log('Delete budget with id:', id);
+const deleteBudget = async (id) => {
+    if (!confirm('Êtes-vous sûr de vouloir supprimer ce budget mensuel?')) {
+        return;
+    }
+    
+    try {
+        await axios.delete(`/monthly-budgets/${id}`);
+        window.location.reload();
+    } catch (error) {
+        console.error('Error deleting budget:', error);
+        alert('Erreur lors de la suppression');
+    }
 };
 </script>

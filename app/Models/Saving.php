@@ -3,13 +3,22 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Saving extends Model
 {
-    protected $fillable = ['user_id', 'name', 'amount', 'date', 'description'];
+    protected $fillable = [
+        'user_id',
+        'name',
+        'amount',
+        'date'
+    ];
 
-    public function user(): BelongsTo
+    protected $casts = [
+        'amount' => 'decimal:2',
+        'date' => 'date'
+    ];
+
+    public function user()
     {
         return $this->belongsTo(User::class);
     }

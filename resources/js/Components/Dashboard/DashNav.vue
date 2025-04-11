@@ -147,17 +147,17 @@ const handleClickOutside = (event) => {
   }
 };
 
+// Move checkScreenSize outside of onMounted so it's accessible in onUnmounted
+const checkScreenSize = () => {
+  if (window.innerWidth >= 768) { // md breakpoint
+    sidebarOpen.value = true;
+  } else {
+    sidebarOpen.value = false;
+  }
+};
+
 onMounted(() => {
   document.addEventListener('click', handleClickOutside);
-  
-  // For mobile sidebar, set default state
-  const checkScreenSize = () => {
-    if (window.innerWidth >= 768) { // md breakpoint
-      sidebarOpen.value = true;
-    } else {
-      sidebarOpen.value = false;
-    }
-  };
   
   // Check on mount
   checkScreenSize();
