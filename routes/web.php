@@ -8,6 +8,7 @@ use App\Http\Controllers\SavingsController;
 use App\Http\Controllers\BudgetController;
 use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\CategoriesController;
+use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\HistoryController;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
@@ -96,7 +97,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard/history', [HistoryController::class, 'index'])->name('history');
 
     // Settings
-    Route::get('/dashboard/settings', function () {
-        return Inertia::render('Dashboard/Settings');
-    })->name('settings');
+    Route::get('/dashboard/settings', [SettingsController::class, 'index'])->name('settings');
+    Route::put('/settings/profile', [SettingsController::class, 'updateProfile'])->name('settings.profile.update');
+    Route::put('/settings/password', [SettingsController::class, 'updatePassword'])->name('settings.password.update');
+    Route::delete('/settings/photo', [SettingsController::class, 'destroyPhoto'])->name('settings.photo.destroy');
+    Route::delete('/settings/account', [SettingsController::class, 'destroyAccount'])->name('settings.account.destroy');
 });
