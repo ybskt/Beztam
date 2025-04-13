@@ -22,11 +22,10 @@ class ExpenseController extends Controller
          $totalBudgetFreeAmount = Budget::where('user_id', $user->id)->sum('free_amount');
          $totalSavings = Saving::where('user_id', $user->id)->sum('amount');
          $totalExpenses = Expense::where('user_id', $user->id)->sum('amount');
+         $freeMargin = $totalBudgetFreeAmount  - $totalExpenses;
+
+         $totalBalance = $freeMargin + $totalSavings;
          
-         $totalBalance = ($totalBudgetFreeAmount + $totalSavings) - $totalExpenses;
-         
-         // Calculate free margin (free amounts - expenses)
-         $freeMargin = $totalBudgetFreeAmount;
 
         return inertia('Dashboard/Expenses', [
             'categories' => Category::where('user_id', $user->id)->get(),
@@ -59,10 +58,8 @@ class ExpenseController extends Controller
 
         // Check if amount exceeds free margin
         $totalBudgetFreeAmount = Budget::where('user_id', $user->id)->sum('free_amount');
-        $totalMonthlyBudgetFreeAmount = MonthlyBudget::where('user_id', $user->id)
-            ->sum('amount') * MonthlyBudget::where('user_id', $user->id)->sum('occurrences');
         $totalExpenses = Expense::where('user_id', $user->id)->sum('amount');
-        $freeMargin = ($totalBudgetFreeAmount + $totalMonthlyBudgetFreeAmount) - $totalExpenses;
+        $freeMargin = $totalBudgetFreeAmount - $totalExpenses;
 
         if ($request->amount > $freeMargin) {
             return back()->withErrors(['amount' => 'Solde indisponible']);

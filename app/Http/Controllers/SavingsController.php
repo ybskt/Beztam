@@ -26,6 +26,7 @@ class SavingsController extends Controller
         'totalSavings' => (float)$totalSavings,
         'savingsRate' => (int)$user->savings_rate, // Ensure integer type
         'recentSavings' => $user->savings()
+            ->where('amount', '>=', 0)
             ->latest()
             ->take(6)
             ->get()
@@ -61,6 +62,41 @@ class SavingsController extends Controller
         return redirect()->back()->with('success', 'Épargne ajoutée avec succès!');
     }
 
+    public function update(Request $request, Saving $saving)
+    {
+        if ($saving->user_id !== Auth::id()) {
+            abort(403);
+        }
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'amount' => 'required|numeric|min:0',
+            'date' => 'required|date',
+            'description' => 'nullable|string',
+        ]);
+
+        $saving->update([
+            'name' => $request->name,
+            'amount' => $request->amount,
+            'date' => $request->date,
+            'description' => $request->description,
+        ]);
+
+        return redirect()->back()->with('success', 'Épargne mise à jour avec succès!');
+    }
+
+    public function destroy(Saving $saving)
+    {
+        if ($saving->user_id !== Auth::id()) {
+            abort(403);
+        }
+
+        $saving->delete();
+
+        return redirect()->back()->with('success', 'Épargne supprimée avec succès!');
+    }
+
+    
     public function updateRate(Request $request)
     {
         $request->validate([

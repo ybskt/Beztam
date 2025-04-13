@@ -181,7 +181,7 @@
               </tbody>
             </table>
             <div class="mt-4 md:mt-6 flex justify-center">
-              <Link :href="route('history')" class="text-sm font-medium text-[#10B981] hover:text-[#059669] transition duration-200">
+              <Link :href="route('history', { type: 'expense' })" class="text-sm font-medium text-[#10B981] hover:text-[#059669] transition duration-200">
                 Voir toutes les dépenses →
               </Link>
             </div>

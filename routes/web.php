@@ -8,6 +8,7 @@ use App\Http\Controllers\SavingsController;
 use App\Http\Controllers\BudgetController;
 use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\CategoriesController;
+use App\Http\Controllers\HistoryController;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
 
@@ -54,32 +55,36 @@ Route::get('/email/verify', function () {
 // Protected Routes
 Route::middleware('auth')->group(function () {
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
-});
-
-// Authenticated Dashboard Routes
-Route::middleware(['auth'])->group(function () {
+   
+    // Dashboard
     Route::get('/dashboard', function () {
         return Inertia::render('Dashboard/Dashboard');
     })->name('dashboard');
 
     // Budget Management
     Route::get('/dashboard/budgets', [BudgetController::class, 'index'])->name('budgets');
-    Route::post('/budgets', [BudgetController::class, 'store']);
-    Route::post('/budgets/process-monthly', [BudgetController::class, 'processMonthlyBudgets']);
-    Route::delete('/monthly-budgets/{id}', [BudgetController::class, 'destroyMonthly']);
+    Route::post('/budgets', [BudgetController::class, 'store'])->name('budgets.store');
+    Route::put('/budgets/{budget}', [BudgetController::class, 'update'])->name('budgets.update');
+    Route::delete('/budgets/{budget}', [BudgetController::class, 'destroy'])->name('budgets.destroy');
+    Route::post('/budgets/process-monthly', [BudgetController::class, 'processMonthlyBudgets'])->name('budgets.process-monthly');
+    Route::put('/monthly-budgets/{monthlyBudget}', [BudgetController::class, 'updateMonthly'])->name('budgets.monthly.update');
+    Route::delete('/monthly-budgets/{id}', [BudgetController::class, 'destroyMonthly'])->name('budgets.monthly.destroy');
 
     // Expense Tracking
     Route::get('/dashboard/expenses', [ExpenseController::class, 'index'])->name('expenses');
     Route::post('/dashboard/expenses', [ExpenseController::class, 'store'])->name('expenses.store');
     Route::put('/dashboard/expenses/{expense}', [ExpenseController::class, 'update'])->name('expenses.update');
-    Route::put('/dashboard/expenses/monthly/{monthlyExpense}', [ExpenseController::class, 'updateMonthly'])->name('expenses.monthly.update');
     Route::delete('/dashboard/expenses/{expense}', [ExpenseController::class, 'destroy'])->name('expenses.destroy');
+    Route::put('/dashboard/expenses/monthly/{monthlyExpense}', [ExpenseController::class, 'updateMonthly'])->name('expenses.monthly.update');
     Route::delete('/dashboard/expenses/monthly/{monthlyExpense}', [ExpenseController::class, 'destroyMonthly'])->name('expenses.monthly.destroy');
+
     // Savings Goals
     Route::get('/dashboard/savings', [SavingsController::class, 'index'])->name('savings');
-    Route::post('/savings', [SavingsController::class, 'store']);
-    Route::post('/savings/rate', [SavingsController::class, 'updateRate']);
-    Route::post('/savings/transfer', [SavingsController::class, 'transferToMargin']);
+    Route::post('/savings', [SavingsController::class, 'store'])->name('savings.store');
+    Route::put('/savings/{saving}', [SavingsController::class, 'update'])->name('savings.update');
+    Route::delete('/savings/{saving}', [SavingsController::class, 'destroy'])->name('savings.destroy');
+    Route::post('/savings/rate', [SavingsController::class, 'updateRate'])->name('savings.rate');
+    Route::post('/savings/transfer', [SavingsController::class, 'transferToMargin'])->name('savings.transfer');
 
     // Categories Management
     Route::get('/dashboard/categories', [CategoriesController::class, 'index'])->name('categories');
@@ -88,9 +93,7 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/dashboard/categories/{category}', [CategoriesController::class, 'destroy'])->name('categories.destroy');
 
     // Transaction History
-    Route::get('/dashboard/history', function () {
-        return Inertia::render('Dashboard/History');
-    })->name('history');
+    Route::get('/dashboard/history', [HistoryController::class, 'index'])->name('history');
 
     // Settings
     Route::get('/dashboard/settings', function () {
