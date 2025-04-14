@@ -22,7 +22,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'email',
         'password',
         'savings_rate',
-        'image' // Added the image column
+        'image' 
     ];
 
     /**

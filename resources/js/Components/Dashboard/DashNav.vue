@@ -6,46 +6,84 @@
       <button @click="toggleSidebar" class="md:hidden p-2">
         <img src="@/Assets/IMG/menu.png" alt="Menu" class="w-6 h-6">
       </button>
-      
+
       <!-- Logo -->
       <Link :href="route('dashboard')" class="flex items-center space-x-2 cursor-pointer">
-          <img src="@/Assets/IMG/wallet.png" alt="BEZTAM logo" class="w-8 h-8 object-contain">
-          <span class="text-xl font-black text-[#1E293B]">BEZTAM</span>
+        <img src="@/Assets/IMG/wallet.png" alt="BEZTAM logo" class="w-8 h-8 object-contain">
+        <span class="text-xl font-black text-[#1E293B]">BEZTAM</span>
       </Link>
-      
+
       <!-- Profile Dropdown -->
       <div class="relative">
-        <button @click="toggleProfileDropdown" ref="profileButton" class="flex items-center space-x-2 focus:outline-none">
-          <div class="w-8 h-8 rounded-full bg-[#D1FAE5] flex items-center justify-center">
-            <span class="text-[#10B981] font-semibold">Y</span>
+        <button 
+          @click="toggleProfileDropdown" 
+          ref="profileButton" 
+          class="flex items-center space-x-2 focus:outline-none"
+        >
+          <div class="w-8 h-8 rounded-full bg-[#D1FAE5] flex items-center justify-center overflow-hidden">
+            <span v-if="!user.image" class="text-[#10B981] font-semibold">
+              {{ userInitials }}
+            </span>
+            <img v-else :src="userImageUrl" class="w-full h-full object-cover">
           </div>
-          <span class="font-medium hidden sm:inline">Younes</span>
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 hidden sm:inline" viewBox="0 0 20 20" fill="currentColor">
-            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+          <span class="font-medium hidden sm:inline">{{ user.first_name }}</span>
+          <svg 
+            xmlns="http://www.w3.org/2000/svg" 
+            class="h-4 w-4 hidden sm:inline" 
+            viewBox="0 0 20 20" 
+            fill="currentColor"
+          >
+            <path 
+              fill-rule="evenodd" 
+              d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" 
+              clip-rule="evenodd" 
+            />
           </svg>
         </button>
-        
+
         <!-- Dropdown Menu -->
-        <div v-show="profileDropdownOpen" ref="profileDropdown" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
+        <div 
+          v-show="profileDropdownOpen" 
+          ref="profileDropdown" 
+          class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50"
+        >
           <div class="px-4 py-2 border-b border-gray-100">
-            <p class="text-sm font-semibold text-[#1E293B]">Younes Bskt</p>
-            <p class="text-xs text-gray-500">younes@example.com</p>
+            <p class="text-sm font-semibold text-[#1E293B]">{{ user.full_name }}</p>
+            <p class="text-xs text-gray-500">{{ user.email }}</p>
           </div>
-          <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-[#D1FAE5] hover:text-[#10B981]">Profil</a>
-          <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-[#D1FAE5] hover:text-[#10B981]">Paramètres</a>
-          <a href="#" class="block px-4 py-2 text-sm text-red-600 hover:bg-red-50 hover:text-red-700">Déconnexion</a>
+          
+          <Link 
+            :href="route('settings')" 
+            class="block px-4 py-2 text-sm text-gray-700 hover:bg-[#D1FAE5] hover:text-[#10B981]"
+          >
+            Paramètres
+          </Link>
+          <Link 
+            :href="route('logout')" 
+            method="post" 
+            as="button"
+            class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 hover:text-red-700"
+          >
+            Déconnexion
+          </Link>
         </div>
       </div>
     </div>
   </header>
 
   <!-- Sidebar -->
-  <div :class="{'hidden': !sidebarOpen, 'md:block': true, 'fixed inset-y-0 left-0 w-64 bg-[#F8F8F9] pt-16 z-10': true}">
+  <div 
+    :class="{
+      'hidden': !sidebarOpen, 
+      'md:block': true, 
+      'fixed inset-y-0 left-0 w-64 bg-[#F8F8F9] pt-16 z-10': true
+    }"
+  >
     <div class="px-4 py-6 md:bg-[#F8F8F9] bg-white">
       <!-- Nav Links -->
       <nav class="flex flex-col bg-white rounded-xl shadow-sm p-2">
-        <Link 
-          :href="route('dashboard')" 
+        <Link
+          :href="route('dashboard')"
           class="nav-link"
           :class="{ 'active-link': route().current('dashboard') }"
         >
@@ -53,8 +91,8 @@
           <span>Accueil</span>
         </Link>
         
-        <Link 
-          :href="route('budgets')" 
+        <Link
+          :href="route('budgets')"
           class="nav-link"
           :class="{ 'active-link': route().current('budgets') }"
         >
@@ -62,8 +100,8 @@
           <span>Budgets</span>
         </Link>
         
-        <Link 
-          :href="route('expenses')" 
+        <Link
+          :href="route('expenses')"
           class="nav-link"
           :class="{ 'active-link': route().current('expenses') }"
         >
@@ -71,8 +109,8 @@
           <span>Dépenses</span>
         </Link>
         
-        <Link 
-          :href="route('history')" 
+        <Link
+          :href="route('history')"
           class="nav-link"
           :class="{ 'active-link': route().current('history') }"
         >
@@ -80,8 +118,8 @@
           <span>Historique</span>
         </Link>
         
-        <Link 
-          :href="route('categories')" 
+        <Link
+          :href="route('categories')"
           class="nav-link"
           :class="{ 'active-link': route().current('categories') }"
         >
@@ -89,8 +127,8 @@
           <span>Catégories</span>
         </Link>
         
-        <Link 
-          :href="route('savings')" 
+        <Link
+          :href="route('savings')"
           class="nav-link"
           :class="{ 'active-link': route().current('savings') }"
         >
@@ -98,8 +136,8 @@
           <span>Épargne</span>
         </Link>
         
-        <Link 
-          :href="route('settings')" 
+        <Link
+          :href="route('settings')"
           class="nav-link"
           :class="{ 'active-link': route().current('settings') }"
         >
@@ -108,14 +146,15 @@
         </Link>
       </nav>
 
-      <!-- Déconnexion Button -->
+      <!-- Sidebar Logout Button -->
       <div class="mt-4">
         <Link 
           :href="route('logout')" 
           method="post" 
           as="button"
-          class="flex items-center rounded-xl py-2 px-8 bg-green-300 hover:bg-green-400 border-green-300 border-2 hover:border-black text-black font-semibold text-lg transition-all">
-          <img src="@/Assets/IMG/dec.png" alt="Déconnexion" class="w-6 h-6 mr-4">
+          class="flex items-center justify-center rounded-xl py-2 px-4 bg-green-300 hover:bg-green-400 border-green-300 border-2 hover:border-black text-black font-semibold text-lg transition-all w-full"
+        >
+          <img src="@/Assets/IMG/dec.png" alt="Déconnexion" class="w-6 h-6 mr-2">
           <span>Déconnexion</span>
         </Link>
       </div>
@@ -124,14 +163,45 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted, onUnmounted, computed } from 'vue';
 import { Link } from '@inertiajs/vue3';
+
+const props = defineProps({
+  user: {
+    type: Object,
+    required: true,
+    default: () => ({
+      id: null,
+      first_name: '',
+      last_name: '',
+      email: '',
+      image: null,
+      email_verified_at: null,
+      created_at: null,
+      updated_at: null,
+      full_name: ''
+    })
+  }
+});
 
 const sidebarOpen = ref(false);
 const profileDropdownOpen = ref(false);
 const profileButton = ref(null);
 const profileDropdown = ref(null);
 
+// Computed properties
+const userInitials = computed(() => {
+  return props.user?.first_name?.[0]?.toUpperCase() || '';
+});
+
+const userImageUrl = computed(() => {
+  if (!props.user?.image) return null;
+  return props.user.image.startsWith('http') 
+    ? props.user.image 
+    : `/storage/${props.user.image}`;
+});
+
+// Methods
 const toggleSidebar = () => {
   sidebarOpen.value = !sidebarOpen.value;
 };
@@ -140,29 +210,21 @@ const toggleProfileDropdown = () => {
   profileDropdownOpen.value = !profileDropdownOpen.value;
 };
 
-// Close dropdown when clicking outside
 const handleClickOutside = (event) => {
-  if (!profileButton.value?.contains(event.target) && !profileDropdown.value?.contains(event.target)) {
+  if (!profileButton.value?.contains(event.target) && 
+      !profileDropdown.value?.contains(event.target)) {
     profileDropdownOpen.value = false;
   }
 };
 
-// Move checkScreenSize outside of onMounted so it's accessible in onUnmounted
 const checkScreenSize = () => {
-  if (window.innerWidth >= 768) { // md breakpoint
-    sidebarOpen.value = true;
-  } else {
-    sidebarOpen.value = false;
-  }
+  sidebarOpen.value = window.innerWidth >= 768;
 };
 
+// Lifecycle hooks
 onMounted(() => {
   document.addEventListener('click', handleClickOutside);
-  
-  // Check on mount
   checkScreenSize();
-  
-  // Add event listener for resize
   window.addEventListener('resize', checkScreenSize);
 });
 
@@ -174,7 +236,7 @@ onUnmounted(() => {
 
 <style scoped>
 .nav-link {
-  @apply flex items-center px-4 py-2 mt-2 mb-4 border-l-8 border-transparent rounded-r-md font-bold text-gray-700 transition-all md:border-l-8 sm:border-l-0;
+  @apply flex items-center px-4 py-2 mt-2 mb-4 border-l-8 border-transparent rounded-r-md font-bold text-gray-700 transition-all;
 }
 
 .nav-link:hover {
@@ -183,10 +245,5 @@ onUnmounted(() => {
 
 .active-link {
   @apply border-l-8 border-[#5AE4A8] bg-[#D1FAE5] text-[#1E293B];
-}
-
-/* Add group-hover styles separately */
-.group:hover .nav-link {
-  @apply bg-[#D1FAE5] border-[#5AE4A8] text-[#1E293B];
 }
 </style>

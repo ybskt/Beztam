@@ -2,14 +2,19 @@
 
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+// Auth Controllers
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\Auth\LogoutController;
+// App Controllers
 use App\Http\Controllers\SavingsController;
 use App\Http\Controllers\BudgetController;
 use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\CategoriesController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\HistoryController;
+use App\Http\Controllers\DashboardNavController;
+// Requests
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
 
@@ -103,4 +108,11 @@ Route::middleware('auth')->group(function () {
     Route::delete('/settings/photo', [SettingsController::class, 'destroyPhoto'])->name('settings.photo.destroy');
     Route::delete('/settings/account', [SettingsController::class, 'destroyAccount'])->name('settings.account.destroy');
     Route::post('/settings/photo', [SettingsController::class, 'uploadPhoto'])->name('settings.photo.upload');
+
+    Route::get('/dashboard/nav', [DashboardNavController::class, 'index'])->name('dashboard.nav');
+
+    Route::post('/logout', \App\Http\Controllers\Auth\LogoutController::class)
+    ->middleware('auth')
+    ->name('logout');
+
 });
