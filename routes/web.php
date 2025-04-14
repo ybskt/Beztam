@@ -102,4 +102,5 @@ Route::middleware('auth')->group(function () {
     Route::put('/settings/password', [SettingsController::class, 'updatePassword'])->name('settings.password.update');
     Route::delete('/settings/photo', [SettingsController::class, 'destroyPhoto'])->name('settings.photo.destroy');
     Route::delete('/settings/account', [SettingsController::class, 'destroyAccount'])->name('settings.account.destroy');
+    Route::post('/settings/photo', [SettingsController::class, 'uploadPhoto'])->name('settings.photo.upload');
 });

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\ImageManager;
 use Intervention\Image\Drivers\Gd\Driver;
@@ -14,7 +15,7 @@ class SettingsController extends Controller
     {
         return inertia('Dashboard/Settings', [
             'user' => Auth::user(),
-            'flash' => session()->get('flash') // Ensure flash is always available
+            'flash' => session()->get('flash', [])
         ]);
     }
 
@@ -26,52 +27,89 @@ class SettingsController extends Controller
             'first_name' => ['required', 'string', 'max:255'],
             'last_name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,'.$user->id],
-            'photo' => ['nullable', 'image', 'mimes:jpeg,png', 'max:1024'],
         ]);
 
-        $user->first_name = $validated['first_name'];
-        $user->last_name = $validated['last_name'];
-        $user->email = $validated['email'];
+        $user->update($validated);
 
-        if ($request->hasFile('photo')) {
-            $this->storeProfilePhoto($user, $request->file('photo'));
-        }
-
-        $user->save();
-
-        return redirect()->route('settings')
-            ->with('flash', ['success' => 'Profile updated successfully.']);
+        return redirect()->route('settings')->with('flash', [
+            'success' => 'Profile updated successfully.'
+        ]);
     }
 
-    public function destroyPhoto()
+    public function uploadPhoto(Request $request)
     {
-        $user = Auth::user();
+        try {
+            $request->validate([
+                'photo' => ['required', 'image', 'mimes:jpeg,png', 'max:1024']
+            ]);
 
-        if ($user->image) {
-            Storage::disk('public')->delete($user->image);
-            $user->image = null;
+            $user = Auth::user();
+            $this->storeProfilePhoto($user, $request->file('photo'));
             $user->save();
-        }
 
-        return back()->with('success', 'Profile photo removed.');
+            return back()->with('flash', [
+                'success' => 'Profile photo updated successfully.'
+            ]);
+
+        } catch (\Exception $e) {
+            return back()->with('flash', [
+                'error' => 'Error uploading photo: '.$e->getMessage()
+            ]);
+        }
     }
 
     protected function storeProfilePhoto($user, $photo)
     {
+        // Delete old photo if exists
         if ($user->image) {
             Storage::disk('public')->delete($user->image);
         }
 
-        $manager = new ImageManager(new Driver());
-        $filename = $user->id.'.'.$photo->getClientOriginalExtension();
-        $path = 'profile-photos/'.$filename;
+        // Generate filename
+        $filename = 'user_'.$user->id.'_'.time().'.'.$photo->getClientOriginalExtension();
+        $path = 'profile_images/'.$filename;
 
-        $image = $manager->read($photo->getRealPath());
-        $image->cover(200, 200);
-        $image->toPng(80);
+        try {
+            // For Intervention Image 3.x
+            $manager = ImageManager::withDriver('gd');
+            $image = $manager->read($photo->getRealPath());
+            $image->cover(200, 200);
+            
+            // Store image in public/profile_images
+            Storage::disk('public')->put($path, $image->toPng()->toString());
 
-        Storage::disk('public')->put($path, $image);
-        $user->image = $path;
+            // Update user with relative path
+            $user->image = $path;
+        } catch (\Exception $e) {
+            // Log the specific error
+            \Log::error('Image processing error: ' . $e->getMessage());
+            
+            // Fallback to basic file storage if image processing fails
+            Storage::disk('public')->putFileAs('profile_images', $photo, $filename);
+            $user->image = $path;
+        }
+    }
+
+    public function destroyPhoto()
+    {
+        try {
+            $user = Auth::user();
+
+            if ($user->image) {
+                Storage::disk('public')->delete($user->image);
+                $user->image = null;
+                $user->save();
+            }
+
+            return back()->with('flash', [
+                'success' => 'Profile photo removed.'
+            ]);
+
+        } catch (\Exception $e) {
+            return back()->with('flash', [
+                'error' => 'Error removing photo: '.$e->getMessage()
+            ]);
+        }
     }
 
     public function updatePassword(Request $request)
@@ -81,11 +119,13 @@ class SettingsController extends Controller
             'password' => ['required', 'confirmed', \Illuminate\Validation\Rules\Password::defaults()],
         ]);
 
-        $user = Auth::user();
-        $user->password = Hash::make($request->password);
-        $user->save();
+        Auth::user()->update([
+            'password' => Hash::make($request->password)
+        ]);
 
-        return back()->with('success', 'Password updated successfully.');
+        return back()->with('flash', [
+            'success' => 'Password updated successfully.'
+        ]);
     }
 
     public function destroyAccount(Request $request)
@@ -93,20 +133,36 @@ class SettingsController extends Controller
         $request->validate([
             'password' => ['required', 'current_password'],
         ]);
-
-        $user = $request->user();
-
-        // Delete profile photo if exists
-        if ($user->image) {
-            Storage::disk('public')->delete($user->image);
+    
+        try {
+            $user = $request->user();
+    
+            // Delete profile photo if exists
+            if ($user->image) {
+                Storage::disk('public')->delete($user->image);
+            }
+    
+            // Logout before deletion to prevent session issues
+            Auth::logout();
+    
+            // Delete the user
+            $user->delete();
+    
+            // Invalidate session
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+    
+            // Redirect to login page with success message
+            return redirect()->route('login')->with('flash', [
+                'success' => 'Your account has been permanently deleted.'
+            ]);
+    
+        } catch (\Exception $e) {
+            return back()->with('flash', [
+                'error' => 'Error deleting account: '.$e->getMessage()
+            ]);
         }
-
-        Auth::logout();
-        $user->delete();
-
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
-
-        return redirect('/');
     }
+
+    
 }
