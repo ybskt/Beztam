@@ -262,15 +262,25 @@
         </div>
       </div>
     </div>
+    <!-- Daily Expenses Chart Section -->
+    <div class="bg-white rounded-xl shadow-sm p-4 md:p-6 mt-4 md:mt-6">
+      <h2 class="text-lg md:text-xl font-bold text-[#1E293B] mb-3 md:mb-4">Graphe Journalier des Dépenses</h2>
+      <hr class="border-t-2 border-gray-200 mb-4 md:mb-6">
+      <div class="relative h-64 sm:h-80 md:h-96">
+        <canvas id="dailyExpensesChart"></canvas>
+      </div>
+    </div>
   </DashLayout>
 </template>
 
 <script setup>
 import { Link, useForm, router } from '@inertiajs/vue3';
-import { ref, computed } from 'vue';
+import { ref, onMounted  } from 'vue';
 import DashLayout from '@/Layouts/DashLayout.vue';
 import ConfirmationModal from '@/Components/Dashboard/ConfirmationModal.vue';
 import EditExpenseModal from '@/Components/Dashboard/EditExpenseModal.vue';
+import { Chart, registerables } from 'chart.js';
+Chart.register(...registerables);
 
 const props = defineProps({
   categories: Array,
@@ -359,4 +369,74 @@ const deleteItem = () => {
     }
   });
 };
+
+const initDailyExpensesChart = async () => {
+  try {
+    const response = await axios.get(route('expenses.daily-data'));
+    const { labels, data } = response.data;
+
+    const ctx = document.getElementById('dailyExpensesChart');
+    if (!ctx) return;
+
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Dépenses quotidiennes',
+          data: data,
+          borderColor: '#EF4444', // Red color
+          backgroundColor: 'rgba(239, 68, 68, 0.1)',
+          borderWidth: 2,
+          fill: true,
+          tension: 0.4,
+          spanGaps: true
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'top',
+          },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                return context.raw !== null 
+                  ? `${context.dataset.label}: ${formatCurrency(context.raw)}`
+                  : 'Pas de données';
+              }
+            }
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: {
+              callback: function(value) {
+                return formatCurrency(value);
+              }
+            }
+          },
+          x: {
+            title: {
+              display: true,
+              text: 'Jour du mois'
+            }
+          }
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Error initializing expenses chart:', error);
+  }
+};
+
+// Call it in onMounted
+onMounted(() => {
+  initDailyExpensesChart();
+});
+
+
 </script>

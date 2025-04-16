@@ -225,4 +225,38 @@ class BudgetController extends Controller
        
         return redirect()->route('budgets')->with('success', 'Budgets mensuels traités');
     }
+
+
+    public function getDailyBudgetData()
+    {
+        $user = Auth::user();
+        $now = Carbon::now();
+        $currentDay = $now->day;
+        $daysInMonth = $now->daysInMonth;
+        
+        $dailyData = [];
+        
+        // Initialize all days with null (will be treated as missing data in Chart.js)
+        for ($day = 1; $day <= $daysInMonth; $day++) {
+            $dailyData[$day] = null;
+        }
+        
+        // Fill actual data up to current day
+        for ($day = 1; $day <= $currentDay; $day++) {
+            $date = Carbon::create($now->year, $now->month, $day);
+            
+                
+            $dailyBudgets = Budget::where('user_id', $user->id)
+                ->whereDate('date', $date)
+                ->sum('amount');
+                
+            $dailyData[$day] = max(0, $dailyBudgets);
+        }
+        
+        return response()->json([
+            'labels' => array_keys($dailyData),
+            'data' => array_values($dailyData),
+            'currentDay' => $currentDay
+        ]);
+    }
 }

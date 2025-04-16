@@ -255,15 +255,27 @@
         </div>
       </div>
     </div>
+    <!-- Daily Graph Section -->
+    <div class="bg-white rounded-xl shadow-sm p-4 md:p-6 mt-4 md:mt-6">
+      <h2 class="text-lg md:text-xl font-bold text-[#1E293B] mb-3 md:mb-4">Graphe Journalier</h2>
+      <hr class="border-t-2 border-gray-200 mb-4 md:mb-6">
+      <div class="relative h-64 sm:h-80 md:h-96">
+        <canvas id="dailyBudgetChart"></canvas>
+      </div>
+    </div>
   </DashLayout>
 </template>
 
 <script setup>
 import { Link, router } from '@inertiajs/vue3';
-import { reactive, ref } from 'vue';
+import { reactive, ref, onMounted  } from 'vue';
 import DashLayout from '@/Layouts/DashLayout.vue';
 import ConfirmationModal from '@/Components/Dashboard/ConfirmationModal.vue';
 import EditMonthlyBudgetModal from '@/Components/Dashboard/EditMonthlyBudgetModal.vue';
+import axios from 'axios';
+import { Chart, registerables } from 'chart.js';
+Chart.register(...registerables);
+
 
 const props = defineProps({
   totalBalance: {
@@ -399,4 +411,77 @@ const deleteMonthlyBudget = () => {
 const handleSaved = () => {
   window.location.reload();
 };
+
+const initDailyBudgetChart = async () => {
+  try {
+    const response = await axios.get(route('budgets.daily-data'));
+    const { labels, data } = response.data;
+
+    const ctx = document.getElementById('dailyBudgetChart');
+    if (!ctx) return;
+
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Variation du budget quotidien',
+          data: data,
+          borderColor: '#5AE4A8', // Your green color
+          backgroundColor: 'rgba(90, 228, 168, 0.1)',
+          borderWidth: 2,
+          fill: true,
+          tension: 0.4,
+          spanGaps: true
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'top',
+          },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                return context.raw !== null 
+                  ? `${context.dataset.label}: ${formatCurrency(context.raw)}`
+                  : 'Pas de données';
+              }
+            }
+          },
+          // REMOVE the entire annotations section
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            min: 0,
+            ticks: {
+              callback: function(value) {
+                return formatCurrency(value);
+              }
+            }
+          },
+          x: {
+            title: {
+              display: true,
+              text: 'Jour du mois'
+            },
+            // Remove the special grid coloring
+            grid: {
+              color: 'rgba(0, 0, 0, 0.1)' // Uniform grid color
+            }
+          }
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Error initializing chart:', error);
+  }
+};
+
+onMounted(() => {
+  initDailyBudgetChart();
+});
 </script>

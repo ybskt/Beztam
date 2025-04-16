@@ -23,6 +23,7 @@
     },
     "dependencies": {
         "@fontsource/poppins": "^5.2.5",
+        "chart.js": "^4.4.8",
         "vue-loader": "^17.4.2",
         "vue-router": "^4.5.0"
     }

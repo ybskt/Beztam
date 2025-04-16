@@ -139,13 +139,23 @@
         </form>
       </div>
     </div>
+    <!-- Daily Savings Chart Section -->
+    <div class="bg-white rounded-xl shadow-sm p-4 md:p-6 mt-4 md:mt-6">
+      <h2 class="text-lg md:text-xl font-bold text-[#1E293B] mb-3 md:mb-4">Graphe Journalier des Épargnes</h2>
+      <hr class="border-t-2 border-gray-200 mb-4 md:mb-6">
+      <div class="relative h-64 sm:h-80 md:h-96">
+        <canvas id="dailySavingsChart"></canvas>
+      </div>
+    </div>
   </DashLayout>
 </template>
 
 <script setup>
 import { Link } from '@inertiajs/vue3';
-import { reactive } from 'vue';
+import { reactive, onMounted  } from 'vue';
 import DashLayout from '@/Layouts/DashLayout.vue';
+import { Chart, registerables } from 'chart.js';
+Chart.register(...registerables);
 
 const props = defineProps({
     totalBalance: {
@@ -275,4 +285,86 @@ const transferToMargin = async () => {
         alert(message);
     }
 };
+
+const initDailySavingsChart = async () => {
+  try {
+    const response = await axios.get(route('savings.daily-data'));
+    const { labels, data } = response.data;
+
+    const ctx = document.getElementById('dailySavingsChart');
+    if (!ctx) return;
+
+    // Destroy previous chart instance if exists
+    if (ctx.chart) {
+      ctx.chart.destroy();
+    }
+
+    ctx.chart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Épargnes quotidiennes',
+          data: data,
+          borderColor: '#3B82F6', // Blue color
+          backgroundColor: 'rgba(59, 130, 246, 0.1)',
+          borderWidth: 2,
+          fill: true,
+          tension: 0.4,
+          spanGaps: true
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'top',
+          },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                return context.raw !== null 
+                  ? `${context.dataset.label}: ${formatCurrency(context.raw)}`
+                  : 'Pas de données';
+              }
+            }
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: false, // Savings can be negative (transfers)
+            ticks: {
+              callback: function(value) {
+                return formatCurrency(value);
+              }
+            }
+          },
+          x: {
+            title: {
+              display: true,
+              text: 'Jour du mois'
+            }
+          }
+        }
+      }
+    });
+
+  } catch (error) {
+    console.error('Error initializing savings chart:', error);
+    
+    // Display error message to user
+    if (error.response?.status === 401) {
+      alert('Veuillez vous reconnecter');
+    } else {
+      alert('Erreur lors du chargement des données. Veuillez réessayer.');
+    }
+  }
+};
+
+// Call it in onMounted
+onMounted(() => {
+  initDailySavingsChart();
+});
+
 </script>

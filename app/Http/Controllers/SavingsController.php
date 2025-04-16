@@ -7,6 +7,8 @@ use App\Models\Saving;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
+use Carbon\Carbon;
+
 
 class SavingsController extends Controller
 {
@@ -141,5 +143,35 @@ class SavingsController extends Controller
         ]);
 
         return redirect()->back()->with('success', 'Montant transféré à la marge libre!');
+    }
+
+    public function getDailySavingsData()
+    {
+        $user = Auth::user();
+        $now = Carbon::now();
+        $currentDay = $now->day;
+        $daysInMonth = $now->daysInMonth;
+        
+        $dailyData = [];
+        
+        // Initialize all days with null (will be treated as missing data in Chart.js)
+        for ($day = 1; $day <= $daysInMonth; $day++) {
+            $dailyData[$day] = null;
+        }
+        
+        // Fill actual data up to current day
+        for ($day = 1; $day <= $currentDay; $day++) {
+            $date = Carbon::create($now->year, $now->month, $day);
+            
+            $dailyData[$day] = Saving::where('user_id', $user->id)
+                ->whereDate('date', $date)
+                ->sum('amount');
+        }
+        
+        return response()->json([
+            'labels' => array_keys($dailyData),
+            'data' => array_values($dailyData),
+            'currentDay' => $currentDay
+        ]);
     }
 }

@@ -172,4 +172,35 @@ class ExpenseController extends Controller
 
         return redirect()->back()->with('success', 'Dépense mensuelle supprimée');
     }
+
+    public function getDailyExpensesData()
+    {
+        $user = Auth::user();
+        $now = Carbon::now();
+        $currentDay = $now->day;
+        $daysInMonth = $now->daysInMonth;
+        
+        $dailyData = [];
+        
+        // Initialize all days with null (will be treated as missing data in Chart.js)
+        for ($day = 1; $day <= $daysInMonth; $day++) {
+            $dailyData[$day] = null;
+        }
+        
+        // Fill actual data up to current day
+        for ($day = 1; $day <= $currentDay; $day++) {
+            $date = Carbon::create($now->year, $now->month, $day);
+            
+            $dailyData[$day] = Expense::where('user_id', $user->id)
+                ->whereDate('date', $date)
+                ->sum('amount');
+        }
+        
+        return response()->json([
+            'labels' => array_keys($dailyData),
+            'data' => array_values($dailyData),
+            'currentDay' => $currentDay
+        ]);
+    }
+   
 }
