@@ -425,7 +425,7 @@ const initDailyBudgetChart = async () => {
       data: {
         labels: labels,
         datasets: [{
-          label: 'Variation du budget quotidien',
+          label: 'Variation du revenu quotidien',
           data: data,
           borderColor: '#5AE4A8', // Your green color
           backgroundColor: 'rgba(90, 228, 168, 0.1)',

@@ -105,7 +105,7 @@
           :class="{ 'active-link': route().current('budgets') }"
         >
           <img src="@/Assets/IMG/budget.png" alt="Budgets" class="w-6 h-6 mr-4">
-          <span>revenus</span>
+          <span>Revenus</span>
         </Link>
         
         <Link

@@ -154,7 +154,7 @@ class BudgetController extends Controller
             'description' => $request->description
         ]);
 
-        return redirect()->back()->with('success', 'Budget mensuel mis à jour');
+        return redirect()->back()->with('success', 'Revenu mensuel mis à jour');
     }
 
     public function destroy(Budget $budget)
@@ -223,7 +223,7 @@ class BudgetController extends Controller
             }
         }
        
-        return redirect()->route('budgets')->with('success', 'Budgets mensuels traités');
+        return redirect()->route('budgets')->with('success', 'Eevenus mensuels traités');
     }
 
 
