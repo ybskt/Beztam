@@ -478,6 +478,7 @@ const formatDate = (dateString) => {
 const showMessageDetails = (message) => {
   selectedMessage.value = message;
   showDetailsModal.value = true;
+  
 };
 
 const showSentMessageDetails = (message) => {

@@ -6,20 +6,15 @@ export default defineConfig({
   plugins: [
     laravel({
       input: [
-        'resources/js/app.js',
+        'resources/js/app.js', // Main JS entry point
         'resources/css/app.css',
       ],
-      refresh: [
-        // Add all directories that need hot reload
-        'resources/views/**',
-        'app/**',
-        'routes/**',
-        'lang/**'
-      ],
+      refresh: true, // Enable hot reloading
     }),
     vue({
       template: {
         transformAssetUrls: {
+          // Ensure Vue handles asset URLs correctly
           base: null,
           includeAbsolute: false,
         },
@@ -28,37 +23,22 @@ export default defineConfig({
   ],
   resolve: {
     alias: {
-      '@': '/resources/js',
+      // Add aliases for easier imports
+      '@': '/resources/js', // Use @ to refer to resources/js
     },
   },
   server: {
-    host: 'localhost',
-    port: 3000,
+    // Configure the development server
+    host: 'localhost', // Set the host
+    port: 3000, // Set the port (optional)
     hmr: {
-      host: 'localhost',
+      host: 'localhost', // Enable Hot Module Replacement (HMR)
     },
-    fs: {
-      // More permissive but still secure settings
-      strict: false, // Changed to false for Laravel compatibility
-      deny: [
-        '.env',
-        '.env.*',
-        '*.key',
-      ],
-      allow: [
-        // Allow all project files
-        process.cwd()
-      ]
-    }
   },
   build: {
-    outDir: 'public/build',
-    emptyOutDir: true,
-    manifest: true,
-    rollupOptions: {
-      input: {
-        app: 'resources/js/app.js',
-      },
-    },
+    // Configure the production build
+    outDir: 'public/build', // Output directory for production assets
+    emptyOutDir: true, // Clear the output directory before building
+    manifest: true, // Generate a manifest file for asset versioning
   },
 });

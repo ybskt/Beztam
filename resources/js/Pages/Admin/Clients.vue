@@ -6,7 +6,7 @@
       <div class="relative max-w-md">
         <input 
           type="text" 
-          placeholder="Rechercher par email..."
+          placeholder="Rechercher client ..."
           v-model="searchQuery"
           class="block w-full border-2 border-gray-200 rounded-lg p-2 pl-10 bg-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
         >
@@ -26,7 +26,7 @@
               <th class="py-3 px-3 w-[20%] text-left">Prénom</th>
               <th class="py-3 px-3 w-[20%] text-left">Nom</th>
               <th class="py-3 px-3 w-[25%] text-left lg:table-cell hidden">Email</th>
-              <th class="py-3 px-3 w-[15%] text-center">Date</th>
+              <th class="py-3 px-3 w-[15%] text-center">Date de création</th>
               <th class="py-3 px-3 w-[10%] text-center">Actions</th>
             </tr>
           </thead>
