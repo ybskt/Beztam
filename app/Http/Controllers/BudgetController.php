@@ -52,7 +52,7 @@ class BudgetController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'amount' => 'required|numeric|min:0',
-            'date' => 'nullable|date',
+            'date' => 'nullable|date|before_or_equal:today',
             'description' => 'nullable|string',
             'is_monthly' => 'boolean',
             'apply_saving' => 'boolean',

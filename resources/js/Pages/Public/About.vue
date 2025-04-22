@@ -39,7 +39,7 @@
           </div>
           <div class="w-full md:w-2/3 text-center md:text-left order-1 md:order-2">
             <p class="text-base font-bold">Notre parcours : De l'idée à une solution innovante</p>
-            <p class="mt-3 sm:mt-4 text-sm font-medium leading-7 sm:leading-8">Tout a commencé avec une constatation simple : Beaucoup de personnes peinent à gérer leur argent au quotidien. Factures oubliées, dépenses excessives, manque de visibilité sur le budget… Autant de défis qui rendent difficile l'atteinte des objectifs financiers.</p>
+            <p class="mt-3 sm:mt-4 text-sm font-medium leading-7 sm:leading-8">Tout a commencé avec une constatation simple : Beaucoup de personnes peinent à gérer leur argent au quotidien. Factures oubliées, dépenses excessives, manque de visibilité sur le revenu … Autant de défis qui rendent difficile l'atteinte des objectifs financiers.</p>
             <p class="mt-2 sm:mt-3 text-sm font-medium leading-7 sm:leading-8">Nous avons voulu créer une solution accessible à tous, un outil simple, intuitif et intelligent, qui facilite la gestion financière et qui permet à chacun d'améliorer son rapport à l'argent.</p>
             <p class="mt-2 sm:mt-3 text-sm font-medium leading-7 sm:leading-8">Aujourd'hui, BEZTAM aide des milliers d'utilisateurs à mieux gérer leur argent et à atteindre leurs objectifs financiers. Et ce n'est que le début !</p>
             <p class="mt-2 sm:mt-3 text-sm font-medium leading-7 sm:leading-8">Nous continuons d'innover pour rendre la gestion financière encore plus simple, efficace et accessible à tous.</p>

@@ -244,7 +244,7 @@
             </button>
           </div>
 
-          <!-- Budget/Saving Form -->
+          <!-- Revenu/Saving Form -->
           <form v-if="selectedTransaction && selectedTransaction.type !== 'expense'" @submit.prevent="submitEditForm">
             <div class="space-y-4">
               <div>
@@ -440,7 +440,7 @@ const selectedTransaction = ref(null);
 
 const filters = [
   { value: 'all', label: 'Tous' },
-  { value: 'budget', label: 'Budget' },
+  { value: 'revenu', label: 'Revenu' },
   { value: 'expense', label: 'Dépense' },
   { value: 'saving', label: 'Épargne' }
 ];
@@ -500,7 +500,7 @@ const applyFilter = () => {
 
 const typeClasses = (type) => {
   return {
-    'bg-blue-100 text-blue-800': type === 'budget',
+    'bg-blue-100 text-blue-800': type === 'revenu',
     'bg-red-100 text-red-800': type === 'expense',
     'bg-green-100 text-green-800': type === 'saving'
   };
@@ -570,7 +570,7 @@ const submitEditForm = () => {
   let routeName;
   
   switch (editForm.type) {
-    case 'budget':
+    case 'revenu':
       routeName = 'budgets.update';
       break;
     case 'expense':
@@ -605,7 +605,7 @@ const deleteTransaction = () => {
   
   let routeName;
   switch (transactionToDelete.value.type) {
-    case 'budget':
+    case 'revenu':
       routeName = 'budgets.destroy';
       break;
     case 'expense':

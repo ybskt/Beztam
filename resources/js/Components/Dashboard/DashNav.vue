@@ -53,11 +53,19 @@
           </div>
           
           <Link 
+            :href="route('contact')" 
+            class="block px-4 py-2 text-sm text-gray-700 hover:bg-[#D1FAE5] hover:text-[#10B981]"
+          >
+           Messagerie
+          </Link>
+
+          <Link 
             :href="route('settings')" 
             class="block px-4 py-2 text-sm text-gray-700 hover:bg-[#D1FAE5] hover:text-[#10B981]"
           >
             Paramètres
           </Link>
+
           <Link 
             :href="route('logout')" 
             method="post" 
@@ -97,7 +105,7 @@
           :class="{ 'active-link': route().current('budgets') }"
         >
           <img src="@/Assets/IMG/budget.png" alt="Budgets" class="w-6 h-6 mr-4">
-          <span>Budgets</span>
+          <span>revenus</span>
         </Link>
         
         <Link

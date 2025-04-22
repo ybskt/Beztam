@@ -46,8 +46,8 @@
           :href="route('budgets')"
           class="bg-white rounded-xl shadow-sm p-4 text-center cursor-pointer hover:bg-[#D1FAE5] transition-colors"
         >
-          <img src="@/Assets/IMG/budget.png" alt="Budget" class="w-10 h-10 mx-auto mb-2">
-          <p class="text-[#5AE4A8] text-sm font-bold">Budgets</p>
+          <img src="@/Assets/IMG/budget.png" alt="Revenu" class="w-10 h-10 mx-auto mb-2">
+          <p class="text-[#5AE4A8] text-sm font-bold">Revenus</p>
         </Link>
         <Link
           :href="route('expenses')"

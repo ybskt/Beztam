@@ -31,7 +31,7 @@
                   <div class="bg-[#F8F8F9] p-6 rounded-lg shadow-md flex flex-col items-center text-center">
                       <img src="@/Assets/IMG/process.png" alt="Suivi complet" class="w-16 h-16 sm:w-20 sm:h-20 mb-6">
                       <h2 class="text-xl font-medium mb-4">Suivi complet</h2>
-                      <p class="text-base mb-6">Analysez vos finances en temps réel, suivez vos revenus et dépenses avec précision et gardez le contrôle total sur votre budget facilement.</p>
+                      <p class="text-base mb-6">Analysez vos finances en temps réel, suivez vos revenus et dépenses avec précision et gardez le contrôle total sur votre revenu facilement.</p>
                       <Link :href="route('features')" class="text-base font-medium text-[#5AE4A8] hover:underline">Lire la suite</Link>
                   </div>
   
@@ -39,7 +39,7 @@
                   <div class="bg-[#F8F8F9] p-6 rounded-lg shadow-md flex flex-col items-center text-center">
                       <img src="@/Assets/IMG/notification.png" alt="Notifications et alertes" class="w-16 h-16 sm:w-20 sm:h-20 mb-6">
                       <h2 class="text-xl font-medium mb-4">Notifications & alertes</h2>
-                      <p class="text-base mb-6">Recevez des alertes pour éviter les oublis de paiements, contrôler votre budget et suivre vos objectifs financiers sans stress, en toute simplicité.</p>
+                      <p class="text-base mb-6">Recevez des alertes pour éviter les oublis de paiements, contrôler votre revenu et suivre vos objectifs financiers sans stress, en toute simplicité.</p>
                       <Link :href="route('features')" class="text-base font-medium text-[#5AE4A8] hover:underline">Lire la suite</Link>
                   </div>
   
@@ -121,7 +121,7 @@
                               <img src="@/Assets/IMG/p5.png" alt="Sophie profile" class="w-24 h-24 rounded-full mx-auto mb-6">
                               <h3 class="text-xl font-medium mb-2">Sophie T.</h3>
                               <p class="text-base text-gray-600 mb-4">sophie.t@outlook.com</p>
-                              <p class="text-base">La visualisation des dépenses m'a permis de prendre conscience de mes habitudes et d'ajuster mon budget plus efficacement.</p>
+                              <p class="text-base">La visualisation des dépenses m'a permis de prendre conscience de mes habitudes et d'ajuster mon revenu plus efficacement.</p>
                           </div>
   
                           <!-- Testimonial 6 (Hidden on mobile) -->

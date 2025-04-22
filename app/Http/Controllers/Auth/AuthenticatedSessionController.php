@@ -25,13 +25,14 @@ class AuthenticatedSessionController extends Controller
         return redirect()->intended(route('dashboard'));
     }
 
-    public function destroy(Request $request): RedirectResponse
+    public function destroy(Request $request)
     {
         Auth::guard('web')->logout();
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();
+        $request->session()->flash('logout', true); // Add this line
 
-        return redirect('/');
+        return Inertia::location('/login'); // Force full page reload
     }
 }

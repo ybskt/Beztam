@@ -69,12 +69,8 @@
             <!-- Expense Name -->
             <div class="flex flex-col sm:flex-row sm:items-center">
               <label class="text-sm font-medium text-gray-700 mb-1 sm:mb-0 sm:w-1/3 whitespace-nowrap">Nom de dépense* :</label>
-              <input
-                v-model="form.name"
-                type="text"
-                class="flex-1 sm:w-2/3 border-2 rounded-lg p-2 border-[#D1FAE5] bg-slate-50 focus:outline-none focus:ring-2 focus:ring-[#10B981] focus:border-transparent"
-                required
-              />
+              <input v-model="form.name" type="text" class="flex-1 sm:w-2/3 border-2 rounded-lg p-2 border-[#D1FAE5] bg-slate-50 focus:outline-none focus:ring-2 focus:ring-[#10B981] focus:border-transparent">
+
             </div>
 
             <!-- Category -->
@@ -115,8 +111,8 @@
                 v-model="form.date"
                 type="date"
                 class="flex-1 sm:w-2/3 border-2 rounded-lg p-2 border-[#D1FAE5] bg-slate-50 focus:outline-none focus:ring-2 focus:ring-[#10B981] focus:border-transparent"
-                required
-              />
+                :max="new Date().toISOString().split('T')[0]" 
+              >
             </div>
 
             <!-- Monthly Checkbox -->
@@ -295,7 +291,7 @@ const form = useForm({
   name: '',
   category: '',
   amount: '',
-  date: new Date().toISOString().split('T')[0],
+  date: new Date().toISOString().split('T')[0], // Same as budget page
   is_monthly: false,
   description: ''
 });
@@ -318,6 +314,7 @@ const formatCurrency = (amount) => {
 };
 
 const formatDate = (dateString) => {
+  if (!dateString) return '';
   const date = new Date(dateString);
   const day = date.getDate().toString().padStart(2, '0');
   const month = (date.getMonth() + 1).toString().padStart(2, '0');
@@ -326,20 +323,22 @@ const formatDate = (dateString) => {
 };
 
 const submitExpense = () => {
-  // Check if amount is greater than free margin
   if (parseFloat(form.amount) > props.freeMargin) {
     amountError.value = true;
     return;
   }
-  
+
   amountError.value = false;
-  
+
   form.post(route('expenses.store'), {
     preserveScroll: true,
     onSuccess: () => {
       form.reset();
-      form.date = new Date().toISOString().split('T')[0];
-      router.reload({ only: ['recentExpenses', 'monthlyExpenses'] });
+      form.date = new Date().toISOString().split('T')[0]; // Same as budget page
+      window.location.reload(); // Full reload like budget page
+    },
+    onError: (errors) => {
+      console.error('Error adding expense:', errors);
     }
   });
 };
@@ -374,18 +373,23 @@ const initDailyExpensesChart = async () => {
   try {
     const response = await axios.get(route('expenses.daily-data'));
     const { labels, data } = response.data;
-
     const ctx = document.getElementById('dailyExpensesChart');
+    
+    // Destroy previous chart instance if exists
+    if (window.expenseChartInstance) {
+      window.expenseChartInstance.destroy();
+    }
+    
     if (!ctx) return;
-
-    new Chart(ctx, {
+    
+    window.expenseChartInstance = new Chart(ctx, {
       type: 'line',
       data: {
         labels: labels,
         datasets: [{
           label: 'Dépenses quotidiennes',
           data: data,
-          borderColor: '#EF4444', // Red color
+          borderColor: '#EF4444',
           backgroundColor: 'rgba(239, 68, 68, 0.1)',
           borderWidth: 2,
           fill: true,
@@ -403,7 +407,7 @@ const initDailyExpensesChart = async () => {
           tooltip: {
             callbacks: {
               label: function(context) {
-                return context.raw !== null 
+                return context.raw !== null
                   ? `${context.dataset.label}: ${formatCurrency(context.raw)}`
                   : 'Pas de données';
               }
@@ -432,7 +436,6 @@ const initDailyExpensesChart = async () => {
     console.error('Error initializing expenses chart:', error);
   }
 };
-
 // Call it in onMounted
 onMounted(() => {
   initDailyExpensesChart();

@@ -6,7 +6,6 @@ use App\Models\Expense;
 use App\Models\MonthlyExpense;
 use App\Models\Category;
 use App\Models\Budget;
-use App\Models\MonthlyBudget;
 use App\Models\Saving;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -17,18 +16,16 @@ class ExpenseController extends Controller
     public function index()
     {
         $user = Auth::user();
-
-         // Calculate total balance (free amounts from budgets + savings - expenses)
-         $totalBudgetFreeAmount = Budget::where('user_id', $user->id)->sum('free_amount');
-         $totalSavings = Saving::where('user_id', $user->id)->sum('amount');
-         $totalExpenses = Expense::where('user_id', $user->id)->sum('amount');
-         $freeMargin = $totalBudgetFreeAmount  - $totalExpenses;
-
-         $totalBalance = $freeMargin + $totalSavings;
-         
-
+        
+        // Calculate total balance (free amounts from budgets + savings - expenses)
+        $totalBudgetFreeAmount = Budget::where('user_id', $user->id)->sum('free_amount');
+        $totalSavings = Saving::where('user_id', $user->id)->sum('amount');
+        $totalExpenses = Expense::where('user_id', $user->id)->sum('amount');
+        $freeMargin = $totalBudgetFreeAmount - $totalExpenses;
+        $totalBalance = $freeMargin + $totalSavings;
+        
         return inertia('Dashboard/Expenses', [
-            'categories' => Category::where('user_id', $user->id)->get(),
+            'categories' => Category::where('user_id', $user->id)->get()->toArray(), // Ensure it's converted to array
             'recentExpenses' => Expense::with('category')
                 ->where('user_id', $user->id)
                 ->orderBy('date', 'desc')
@@ -46,12 +43,12 @@ class ExpenseController extends Controller
     public function store(Request $request)
     {
         $user = Auth::user();
-
+        
         $request->validate([
             'name' => 'required|string|max:255',
             'category' => 'required|exists:categories,id,user_id,'.$user->id,
             'amount' => 'required|numeric|min:0',
-            'date' => 'required|date',
+            'date' => 'nullable|date|before_or_equal:today',
             'is_monthly' => 'boolean',
             'description' => 'nullable|string'
         ]);
@@ -60,12 +57,12 @@ class ExpenseController extends Controller
         $totalBudgetFreeAmount = Budget::where('user_id', $user->id)->sum('free_amount');
         $totalExpenses = Expense::where('user_id', $user->id)->sum('amount');
         $freeMargin = $totalBudgetFreeAmount - $totalExpenses;
-
+        
         if ($request->amount > $freeMargin) {
             return back()->withErrors(['amount' => 'Solde indisponible']);
         }
 
-        $date = $request->date;
+        $date = $request->date ? Carbon::parse($request->date)->format('Y-m-d') : now()->format('Y-m-d');
         $dayOfMonth = Carbon::parse($date)->day;
 
         if ($request->is_monthly) {
@@ -98,6 +95,7 @@ class ExpenseController extends Controller
             ]);
         }
 
+        // Return the same type of response as BudgetController
         return redirect()->route('expenses')->with('success', 'Dépense ajoutée avec succès');
     }
 
@@ -202,5 +200,38 @@ class ExpenseController extends Controller
             'currentDay' => $currentDay
         ]);
     }
-   
+    public function processMonthlyExpenses()
+    {
+        $user = Auth::user();
+        $today = now();
+        $monthlyExpenses = MonthlyExpense::where('user_id', $user->id)->get();
+
+        foreach ($monthlyExpenses as $monthlyExpense) {
+            // Handle February case (28 or 29 days)
+            $dayToProcess = $monthlyExpense->day_of_month;
+            $lastDayOfMonth = $today->copy()->endOfMonth()->day;
+            
+            if ($dayToProcess > $lastDayOfMonth) {
+                $dayToProcess = $lastDayOfMonth;
+            }
+            
+            if ($today->day == $dayToProcess) {
+                // Add to regular expenses
+                Expense::create([
+                    'user_id' => $user->id,
+                    'category_id' => $monthlyExpense->category_id,
+                    'name' => $monthlyExpense->name,
+                    'amount' => $monthlyExpense->amount,
+                    'date' => $today->format('Y-m-d'),
+                    'description' => $monthlyExpense->description,
+                ]);
+
+                // Increment occurrences
+                $monthlyExpense->increment('occurrences');
+            }
+        }
+
+        return redirect()->route('expenses')->with('success', 'Dépenses mensuelles traitées');
+    }
+    
 }

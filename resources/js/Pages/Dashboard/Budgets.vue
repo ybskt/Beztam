@@ -6,10 +6,10 @@
       @close="showDeleteModal = false"
     >
       <template #title>
-        Supprimer le budget mensuel
+        Supprimer le revenu mensuel
       </template>
       <template #content>
-        Êtes-vous sûr de vouloir supprimer ce budget mensuel? Cette action est irréversible.
+        Êtes-vous sûr de vouloir supprimer ce revenu mensuel? Cette action est irréversible.
       </template>
       <template #footer>
         <button
@@ -88,13 +88,13 @@
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
       <!-- Add Budget Form -->
       <div class="bg-white rounded-xl shadow-sm p-4 md:p-6">
-        <h2 class="text-lg md:text-xl font-bold text-[#1E293B] mb-3 md:mb-4">Ajouter Budget</h2>
+        <h2 class="text-lg md:text-xl font-bold text-[#1E293B] mb-3 md:mb-4">Ajouter Revenu</h2>
         <hr class="border-t-2 border-gray-200 mb-4 md:mb-6">
         <form @submit.prevent="submitBudget">
           <div class="space-y-3 md:space-y-5">
             <!-- Budget Name -->
             <div class="flex flex-col sm:flex-row sm:items-center">
-              <label class="text-sm font-medium text-gray-700 mb-1 sm:mb-0 sm:w-1/3 whitespace-nowrap">Nom du budget* :</label>
+              <label class="text-sm font-medium text-gray-700 mb-1 sm:mb-0 sm:w-1/3 whitespace-nowrap">Nom du revenu* :</label>
               <input v-model="form.name" type="text" class="flex-1 sm:w-2/3 border-2 rounded-lg p-2 border-[#D1FAE5] bg-slate-50 focus:outline-none focus:ring-2 focus:ring-[#10B981] focus:border-transparent">
             </div>
 
@@ -110,7 +110,7 @@
             <!-- Date -->
             <div class="flex flex-col sm:flex-row sm:items-center">
               <label class="text-sm font-medium text-gray-700 mb-1 sm:mb-0 sm:w-1/3 whitespace-nowrap">Date:</label>
-              <input v-model="form.date" type="date" class="flex-1 sm:w-2/3 border-2 rounded-lg p-2 border-[#D1FAE5] bg-slate-50 focus:outline-none focus:ring-2 focus:ring-[#10B981] focus:border-transparent">
+              <input v-model="form.date" type="date" class="flex-1 sm:w-2/3 border-2 rounded-lg p-2 border-[#D1FAE5] bg-slate-50 focus:outline-none focus:ring-2 focus:ring-[#10B981] focus:border-transparent" :max="new Date().toISOString().split('T')[0]">
             </div>
 
             <!-- Checkboxes -->
@@ -148,7 +148,7 @@
 
       <!-- Recent Budgets -->
       <div class="bg-white rounded-xl shadow-sm p-4 md:p-6">
-        <h2 class="text-lg md:text-xl font-bold text-[#1E293B] mb-3 md:mb-4">Budgets ajoutés récemment</h2>
+        <h2 class="text-lg md:text-xl font-bold text-[#1E293B] mb-3 md:mb-4">Revenus ajoutés récemment</h2>
         <hr class="border-t-2 border-gray-200 mb-4 md:mb-6">
         <div class="overflow-hidden">
           <div v-if="recentBudgets.length > 0">
@@ -170,12 +170,12 @@
             </table>
             <div class="mt-4 md:mt-6 flex justify-center">
               <Link :href="route('history', { type: 'budget' })" class="text-sm font-medium text-[#10B981] hover:text-[#059669] transition duration-200">
-                Voir tous les budgets →
+                Voir tous les revenus →
               </Link>
             </div>
           </div>
           <div v-else class="text-center py-4 text-gray-500">
-            Pas de budgets enregistrés
+            Pas de revenus enregistrés
           </div>
         </div>
       </div>
@@ -183,7 +183,7 @@
 
     <!-- Monthly Budget Section -->
     <div class="bg-white rounded-xl shadow-sm p-4 md:p-6 mt-4 md:mt-6">
-      <h2 class="text-lg md:text-xl font-bold text-[#1E293B] mb-3 md:mb-4">Budget Mensuel</h2>
+      <h2 class="text-lg md:text-xl font-bold text-[#1E293B] mb-3 md:mb-4">Revenu Mensuel</h2>
       <hr class="border-t-2 border-gray-200 mb-4 md:mb-6">
 
       <!-- Table for md screens and larger -->
@@ -377,7 +377,7 @@ const submitBudget = async () => {
     window.location.reload();
   } catch (error) {
     formErrors.value = error.response?.data?.message || 'Veuillez réessayer';
-    console.error('Error adding budget:', error);
+    console.error('Error adding income:', error);
   }
 };
 
