@@ -189,6 +189,61 @@
         </form>
       </div>
       
+      <!-- Section Satisfaction -->
+      <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+        <h2 class="text-lg font-semibold text-gray-800 mb-4">Évaluation de l'application</h2>
+        
+        <div class="flex flex-col md:flex-row gap-6">
+          <!-- User Rating -->
+          <div class="flex-1">
+            <h3 class="text-md font-medium text-gray-700 mb-3">Votre note</h3>
+            <div class="flex justify-center space-x-1">
+              <template v-for="i in 5" :key="i">
+                <button
+                  @click="updateRating(i)"
+                  class="text-3xl transition-colors hover:text-yellow-500 focus:outline-none"
+                  :class="{
+                    'text-yellow-400': i <= userRating,
+                    'text-gray-300': i > userRating
+                  }"
+                >
+                  ★
+                </button>
+              </template>
+            </div>
+            <p class="text-center text-sm text-gray-500 mt-1">
+              {{ userRating ? `Vous avez noté ${userRating}/5` : 'Cliquez pour évaluer' }}
+            </p>
+          </div>
+
+          <!-- Global Rating -->
+          <div class="flex-1">
+            <h3 class="text-md font-medium text-gray-700 mb-3">Note moyenne</h3>
+            <div class="bg-gray-50 rounded-lg p-4">
+              <div class="flex items-center justify-center">
+                <div class="flex mr-2">
+                  <template v-for="i in 5" :key="i">
+                    <span 
+                      v-if="i <= Math.floor(stats.average_rating)" 
+                      class="text-yellow-400 text-xl"
+                    >★</span>
+                    <span 
+                      v-else-if="i - 0.5 <= stats.average_rating" 
+                      class="text-yellow-400 text-xl"
+                    >½</span>
+                    <span 
+                      v-else 
+                      class="text-gray-300 text-xl"
+                    >★</span>
+                  </template>
+                </div>
+                <span class="text-xl font-semibold">{{ stats.average_rating.toFixed(1) }}</span>
+                <span class="ml-1 text-gray-500 text-sm">({{ stats.total_ratings }})</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
       <!-- Delete Account Section -->
       <div class="bg-white rounded-xl shadow-sm p-6">
         <h2 class="text-lg font-semibold text-[#1E293B] mb-4">Delete Account</h2>
@@ -292,6 +347,7 @@
 import { computed, ref } from 'vue';
 import { useForm, router } from '@inertiajs/vue3';
 import DashLayout from '@/Layouts/DashLayout.vue';
+import axios from 'axios';
 import ConfirmationModal from '@/Components/Dashboard/ConfirmationModal.vue';
 
 const props = defineProps({
@@ -309,6 +365,13 @@ const props = defineProps({
       created_at: null,
       updated_at: null,
       full_name: ''
+    })
+  },
+  stats: {
+    type: Object,
+    default: () => ({
+      average_rating: 0,
+      total_ratings: 0
     })
   },
   flash: {
@@ -443,6 +506,27 @@ const submitPassword = () => {
   });
 };
 
+// Add reactive references
+const userRating = ref(props.user.rating ? Number(props.user.rating) : 0);
+const stats = ref({
+  average_rating: props.stats.average_rating ? Number(props.stats.average_rating) : 0,
+  total_ratings: props.stats.total_ratings || 0
+});
+
+// Update rating method
+const updateRating = async (rating) => {
+  userRating.value = rating;
+  
+  try {
+    const response = await axios.put(route('settings.rating.update'), { rating });
+    stats.value = {
+      average_rating: Number(response.data.average_rating),
+      total_ratings: Number(response.data.total_ratings)
+    };
+  } catch (error) {
+    console.error('Error updating rating:', error);
+  }
+};
 const deleteUser = () => {
   deleteAccountForm.delete(route('settings.account.destroy'), {
     preserveScroll: false, // Important for redirect to work

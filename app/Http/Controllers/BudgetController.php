@@ -26,6 +26,7 @@ class BudgetController extends Controller
         // Recent budgets (last 7) with formatted dates
         $recentBudgets = Budget::where('user_id', $user->id)
             ->orderBy('created_at', 'desc')
+            ->orderBy('id', 'desc')
             ->limit(7)
             ->get()
             ->map(function ($budget) {
@@ -68,7 +69,7 @@ class BudgetController extends Controller
             $dayOfMonth = now()->day;
            
             // Add to monthly budgets
-            $monthlyBudget = MonthlyBudget::create([
+            MonthlyBudget::create([
                 'user_id' => $user->id,
                 'name' => $request->name,
                 'amount' => $amount,

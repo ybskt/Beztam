@@ -42,9 +42,9 @@ class AdminHomeController extends Controller
             ];
         }
 
-        // Calculate ratings
+        // Calculate ratings - ensure numeric values
         $ratingStats = User::select(
-            DB::raw('AVG(rating) as average_rating'),
+            DB::raw('CAST(AVG(rating) AS DECIMAL(10,1)) as average_rating'),
             DB::raw('COUNT(rating) as total_ratings')
         )->whereNotNull('rating')->first();
 
@@ -81,8 +81,8 @@ class AdminHomeController extends Controller
             'stats' => [
                 'total_users' => User::count(),
                 'monthly_traffic' => PageView::where('created_at', '>=', now()->subDays(30))->count(),
-                'average_rating' => $ratingStats->average_rating ?? 0,
-                'total_ratings' => $ratingStats->total_ratings ?? 0,
+                'average_rating' => (float) ($ratingStats->average_rating ?? 0),
+                'total_ratings' => (int) ($ratingStats->total_ratings ?? 0),
                 'user_registrations' => $filledRegistrations,
                 'page_views' => $filledPageViews,
                 'popular_pages' => $popularPages

@@ -26,7 +26,7 @@ class HistoryController extends Controller
         }
 
         switch ($type) {
-            case 'budget':
+            case 'revenu':
                 $transactions = $this->getBudgetTransactions($perPage);
                 break;
             case 'expense':

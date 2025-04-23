@@ -21,7 +21,8 @@ use App\Http\Controllers\{
     HistoryController,
     SavingsController,
     SettingsController,
-    ContactController
+    ContactController,
+    GuestContactController
 };
 
 // Admin Controllers
@@ -52,10 +53,8 @@ Route::get('/about', function () {
     return Inertia::render('Public/About');
 })->name('about');
 
-Route::get('/contact', function () {
-    return Inertia::render('Public/Contact');
-})->name('contact');
-
+Route::get('/contact', function () { return Inertia::render('Public/Contact');})->name('contact');
+Route::post('/contact', [GuestContactController::class, 'store'])->name('guest-contact.store');
 /*--------------------------------------------------------------------------
 | Authentication Routes
 |--------------------------------------------------------------------------
@@ -167,6 +166,7 @@ Route::middleware('auth')->group(function () {
         Route::delete('/settings/photo', 'destroyPhoto')->name('settings.photo.destroy');
         Route::delete('/settings/account', 'destroyAccount')->name('settings.account.destroy');
         Route::post('/settings/photo', 'uploadPhoto')->name('settings.photo.upload');
+        Route::put('/settings/rating', 'updateRating')->name('settings.rating.update');
     });
 
     // Route::get('/dashboard/contact', function () {

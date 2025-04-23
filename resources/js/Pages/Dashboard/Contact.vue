@@ -342,6 +342,14 @@
                     {{ message.is_read ? 'Lu' : 'Non lu' }}
                   </span>
                 </td>
+                <td class="py-3 px-4 text-sm font-medium text-center" @click.stop>
+                  <button
+                    @click="openDeleteModal(message)"
+                    class="p-1 rounded-md hover:bg-red-100 transition-all"
+                  >
+                    <img src="@/Assets/IMG/delete.png" alt="Delete" class="w-5 h-5">
+                  </button>
+                </td>
               </tr>
               <tr v-if="sentMessages.data.length === 0">
                 <td colspan="3" class="py-4 text-center text-gray-500">
@@ -411,6 +419,12 @@
             >
               {{ message.is_read ? 'Lu' : 'Non lu' }}
             </span>
+            <button
+              @click="openDeleteModal(message)"
+              class="p-2 rounded-md bg-red-50 hover:bg-red-100 transition-all"
+            >
+              <img src="@/Assets/IMG/delete.png" alt="Delete" class="w-4 h-4">
+            </button>
           </div>
         </div>
         <div v-if="sentMessages.data.length === 0" class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 text-center text-gray-500">
@@ -418,6 +432,43 @@
         </div>
       </div>
     </div>
+
+    <!-- Delete Confirmation Modal -->
+  <Transition name="fade">
+    <div v-if="showDeleteModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div class="fixed inset-0 bg-black bg-opacity-50 transition-opacity" @click="closeDeleteModal"></div>
+      
+      <div class="relative z-50 bg-white rounded-xl shadow-lg max-w-md w-full mx-4">
+        <div class="p-6">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-xl font-bold text-[#1E293B]">Confirmer la suppression</h3>
+            <button @click="closeDeleteModal" class="text-gray-500 hover:text-gray-700">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+          
+          <p class="mb-6">Êtes-vous sûr de vouloir supprimer ce message ? Cette action est irréversible.</p>
+          
+          <div class="flex justify-end space-x-3">
+            <button
+              @click="closeDeleteModal"
+              class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg"
+            >
+              Annuler
+            </button>
+            <button
+              @click="deleteMessage"
+              class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg"
+            >
+              Supprimer
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </Transition>
   </DashLayout>
 </template>
 
@@ -425,6 +476,7 @@
 import DashLayout from '@/Layouts/DashLayout.vue';
 import { ref } from 'vue';
 import { router, useForm } from '@inertiajs/vue3';
+import axios from 'axios';
 
 
 const props = defineProps({
@@ -475,10 +527,20 @@ const formatDate = (dateString) => {
   return `${day}-${month}-${year}`;
 };
 
-const showMessageDetails = (message) => {
+const showMessageDetails = async (message) => {
   selectedMessage.value = message;
   showDetailsModal.value = true;
-  
+
+  // Mark as read if unread
+  if (!message.is_read) {
+    try {
+      await axios.patch(route('messages.read', message.id));
+      // Update local state
+      message.is_read = true;
+    } catch (error) {
+      console.error('Error marking message as read:', error);
+    }
+  }
 };
 
 const showSentMessageDetails = (message) => {
@@ -517,6 +579,26 @@ const submitSupportRequest = () => {
     onSuccess: () => {
       supportForm.reset();
       activeTab.value = 'sent';
+    }
+  });
+};
+
+const showDeleteModal = ref(false);
+
+const openDeleteModal = (message) => {
+  selectedMessage.value = message;
+  showDeleteModal.value = true;
+};
+
+const closeDeleteModal = () => {
+  showDeleteModal.value = false;
+};
+
+const deleteMessage = () => {
+  router.delete(route('messages.destroy', selectedMessage.value.id), {
+    preserveScroll: true,
+    onSuccess: () => {
+      closeDeleteModal();
     }
   });
 };

@@ -29,6 +29,7 @@ class ExpenseController extends Controller
             'recentExpenses' => Expense::with('category')
                 ->where('user_id', $user->id)
                 ->orderBy('date', 'desc')
+                ->orderBy('id', 'desc')
                 ->limit(8)
                 ->get(),
             'monthlyExpenses' => MonthlyExpense::with('category')
@@ -66,7 +67,7 @@ class ExpenseController extends Controller
         $dayOfMonth = Carbon::parse($date)->day;
 
         if ($request->is_monthly) {
-            $monthlyExpense = MonthlyExpense::create([
+            MonthlyExpense::create([
                 'user_id' => $user->id,
                 'category_id' => $request->category,
                 'name' => $request->name,

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User; 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -15,6 +16,10 @@ class SettingsController extends Controller
     {
         return inertia('Dashboard/Settings', [
             'user' => Auth::user(),
+            'stats' => [
+            'average_rating' => (float) User::whereNotNull('rating')->avg('rating') ?? 0.0,
+            'total_ratings' => (int) User::whereNotNull('rating')->count()
+                ],
             'flash' => session()->get('flash', [])
         ]);
     }
@@ -125,6 +130,22 @@ class SettingsController extends Controller
 
         return back()->with('flash', [
             'success' => 'Password updated successfully.'
+        ]);
+    }
+
+    public function updateRating(Request $request)
+    {
+        $request->validate([
+            'rating' => ['required', 'numeric', 'min:1', 'max:5']
+        ]);
+    
+        $user = Auth::user();
+        $user->rating = $request->rating;
+        $user->save();
+    
+        return response()->json([
+            'average_rating' => (float) User::whereNotNull('rating')->avg('rating') ?: 0,
+            'total_ratings' => (int) User::whereNotNull('rating')->count()
         ]);
     }
 

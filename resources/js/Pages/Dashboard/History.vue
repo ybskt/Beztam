@@ -105,7 +105,7 @@
             </span>
           </div>
           <div class="flex justify-between items-center mt-3">
-            <p class="font-bold text-[#10B981]">{{ formatCurrency(transaction.amount) }}</p>
+            <p class="font-bold ">{{ formatCurrency(transaction.amount) }}</p>
             <div class="flex space-x-2">
               <button
                 @click.stop="editTransaction(transaction)"
