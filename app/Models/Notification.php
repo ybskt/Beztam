@@ -2,22 +2,23 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Notification extends Model
 {
-    use HasFactory;
-
+    public $timestamps = false; // Completely disable timestamps
+    
     protected $fillable = [
         'user_id',
-        'notification',
+        'notification', 
         'type',
+        'created_at' // Manually handled
     ];
 
-    /**
-     * Get the user that owns the notification.
-     */
+    protected $casts = [
+        'created_at' => 'datetime'
+    ];
+
     public function user()
     {
         return $this->belongsTo(User::class);

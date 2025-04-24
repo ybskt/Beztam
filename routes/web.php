@@ -22,7 +22,8 @@ use App\Http\Controllers\{
     SavingsController,
     SettingsController,
     ContactController,
-    GuestContactController
+    GuestContactController,
+    TestNotificationController
 };
 
 // Admin Controllers
@@ -166,31 +167,27 @@ Route::middleware('auth')->group(function () {
         Route::delete('/settings/photo', 'destroyPhoto')->name('settings.photo.destroy');
         Route::delete('/settings/account', 'destroyAccount')->name('settings.account.destroy');
         Route::post('/settings/photo', 'uploadPhoto')->name('settings.photo.upload');
-        Route::put('/settings/rating', 'updateRating')->name('settings.rating.update');
+        
     });
 
-    // Route::get('/dashboard/contact', function () {
-    //     return Inertia::render('Dashboard/Contact');
-    // })->name('contact');
+
 
     Route::controller(ContactController::class)->group(function () {
-        // Contact page with paginated messages
-        Route::get('/dashboard/contact/{tab?}', 'index')->name('contact');
-        
-        // Support request (message to admin)
+        Route::get('/dashboard/contact/{tab?}', 'index')->name('dashContact');
         Route::post('/dashboard/messages/support', 'support')->name('messages.support');
-        
-        // Mark message as read
         Route::patch('/dashboard/messages/{message}/read', 'read')->name('messages.read');
-        
-        // Reply to message
         Route::post('/dashboard/messages/reply', 'reply')->name('messages.reply');
-        
-        // Delete message
         Route::delete('/dashboard/messages/{message}', 'destroy')->name('messages.destroy');
     });
 
+    Route::controller(TestNotificationController::class)->group(function () {
+        Route::get('/test-notifications', 'index')->name('test.notifications');
+        Route::post('/test-notifications', 'store');
+        Route::delete('/test-notifications', 'destroy');
+    })->middleware('auth');
+
     Route::get('/dashboard/nav', [DashboardNavController::class, 'index'])->name('dashboard.nav');
+   
 });
 
 /*--------------------------------------------------------------------------

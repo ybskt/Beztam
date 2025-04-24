@@ -95,6 +95,10 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->hasMany(UserMessage::class, 'recipient_id');
     }
+    public function notifications()
+    {
+        return $this->hasMany(Notification::class)->orderBy('created_at', 'desc');
+    }    
 
     // Accessors
 

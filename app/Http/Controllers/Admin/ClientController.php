@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\AdminMessage;
+use App\Models\Notification;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -46,12 +47,22 @@ class ClientController extends Controller
             'message' => 'required|string'
         ]);
 
+        // Create the admin message
         AdminMessage::create([
             'user_id' => $request->user_id,
             'subject' => $request->subject,
             'message' => $request->message,
             'is_read' => 0 // 0 = unread
         ]);
+
+        // Create a notification for the user
+        Notification::create([
+            'user_id' => $request->user_id,
+            'notification' => 'Nouveau message disponible',
+            'type' => 'message',
+            'created_at' => now()
+        ]);
+        
 
         return redirect()->back()->with('success', 'Message envoyé avec succès');
     }

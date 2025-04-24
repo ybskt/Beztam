@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\UserMessage;
 use App\Models\AdminMessage;
+use App\Models\Notification;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -47,6 +48,13 @@ class UserMessagesController extends Controller
             'subject' => $request->subject,
             'message' => $request->message,
             'is_read' => 0
+        ]);
+        
+        Notification::create([
+            'user_id' => $request->user_id,
+            'notification' => 'Nouveau message disponible',
+            'type' => 'message',
+            'created_at' => now()
         ]);
 
         return response()->json(['success' => true]);

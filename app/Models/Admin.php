@@ -12,4 +12,9 @@ class Admin extends Authenticatable
 
     protected $guard = 'admin';
     protected $fillable = ['password'];
+    // Add to Admin model:
+    // public function notifications()
+    // {
+    //     return $this->hasMany(Notification::class);
+    // }
 }
