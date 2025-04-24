@@ -7,6 +7,7 @@ use App\Models\MonthlyExpense;
 use App\Models\Category;
 use App\Models\Budget;
 use App\Models\Saving;
+use App\Models\Notification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
@@ -54,11 +55,12 @@ class ExpenseController extends Controller
             'description' => 'nullable|string'
         ]);
 
-        // Check if amount exceeds free margin
+        // Calculate free margin
         $totalBudgetFreeAmount = Budget::where('user_id', $user->id)->sum('free_amount');
         $totalExpenses = Expense::where('user_id', $user->id)->sum('amount');
         $freeMargin = $totalBudgetFreeAmount - $totalExpenses;
-        
+
+        // Check if amount exceeds free margin
         if ($request->amount > $freeMargin) {
             return back()->withErrors(['amount' => 'Solde indisponible']);
         }
@@ -66,8 +68,30 @@ class ExpenseController extends Controller
         $date = $request->date ? Carbon::parse($request->date)->format('Y-m-d') : now()->format('Y-m-d');
         $dayOfMonth = Carbon::parse($date)->day;
 
+        // Check category limit
+        $category = Category::where('id', $request->category)
+            ->where('user_id', $user->id)
+            ->withSum(['expenses as current_month_expenses' => function($query) {
+                $query->whereMonth('date', now()->month)
+                      ->whereYear('date', now()->year);
+            }], 'amount')
+            ->first();
+
+        if ($category && $category->limit_amount !== null) {
+            $projectedTotal = ($category->current_month_expenses ?? 0) + $request->amount;
+            if ($projectedTotal > $category->limit_amount) {
+                $overAmount = $projectedTotal - $category->limit_amount;
+                Notification::create([
+                    'user_id' => $user->id,
+                    'notification' => "Catégorie {$category->name}: limite mensuelle dépassée de ".number_format($overAmount, 2)." DH",
+                    'type' => 'categoryLimitExceeded',
+                    'created_at' => now()
+                ]);
+            }
+        }
+
         if ($request->is_monthly) {
-            MonthlyExpense::create([
+            $monthlyExpense = MonthlyExpense::create([
                 'user_id' => $user->id,
                 'category_id' => $request->category,
                 'name' => $request->name,
@@ -77,7 +101,7 @@ class ExpenseController extends Controller
                 'occurrences' => 1
             ]);
 
-            Expense::create([
+            $expense = Expense::create([
                 'user_id' => $user->id,
                 'category_id' => $request->category,
                 'name' => $request->name,
@@ -85,8 +109,10 @@ class ExpenseController extends Controller
                 'date' => $date,
                 'description' => $request->description
             ]);
+
+           
         } else {
-            Expense::create([
+            $expense = Expense::create([
                 'user_id' => $user->id,
                 'category_id' => $request->category,
                 'name' => $request->name,
@@ -94,12 +120,11 @@ class ExpenseController extends Controller
                 'date' => $date,
                 'description' => $request->description
             ]);
+
         }
 
-        // Return the same type of response as BudgetController
         return redirect()->route('expenses')->with('success', 'Dépense ajoutée avec succès');
     }
-
     public function update(Request $request, Expense $expense)
     {
         if ($expense->user_id !== Auth::id()) {
@@ -207,17 +232,55 @@ class ExpenseController extends Controller
         $today = now();
         $monthlyExpenses = MonthlyExpense::where('user_id', $user->id)->get();
 
+        // Calculate free margin
+        $totalBudgetFreeAmount = Budget::where('user_id', $user->id)->sum('free_amount');
+        $totalExpenses = Expense::where('user_id', $user->id)->sum('amount');
+        $freeMargin = $totalBudgetFreeAmount - $totalExpenses;
+
         foreach ($monthlyExpenses as $monthlyExpense) {
             // Handle February case (28 or 29 days)
             $dayToProcess = $monthlyExpense->day_of_month;
             $lastDayOfMonth = $today->copy()->endOfMonth()->day;
-            
+
             if ($dayToProcess > $lastDayOfMonth) {
                 $dayToProcess = $lastDayOfMonth;
             }
-            
+
             if ($today->day == $dayToProcess) {
-                // Add to regular expenses
+                // Check if amount exceeds free margin
+                if ($monthlyExpense->amount > $freeMargin) {
+                    Notification::create([
+                        'user_id' => $user->id,
+                        'notification' => "Échec de la dépense mensuelle '{$monthlyExpense->name}', solde insuffisant",
+                        'type' => 'monthlyExpenseFailed',
+                        'created_at' => now()
+                    ]);
+                    continue;
+                }
+
+                // Check category limit
+                $category = Category::where('id', $monthlyExpense->category_id)
+                    ->where('user_id', $user->id)
+                    ->withSum(['expenses as current_month_expenses' => function($query) use ($today) {
+                        $query->whereMonth('date', $today->month)
+                              ->whereYear('date', $today->year);
+                    }], 'amount')
+                    ->first();
+
+                if ($category && $category->limit_amount !== null) {
+                    $projectedTotal = ($category->current_month_expenses ?? 0) + $monthlyExpense->amount;
+                    if ($projectedTotal > $category->limit_amount) {
+                        $overAmount = $projectedTotal - $category->limit_amount;
+                        Notification::create([
+                            'user_id' => $user->id,
+                            'notification' => "Catégorie {$category->name}: limite mensuelle dépassée de ".number_format($overAmount, 2)." DH",
+                            'type' => 'categoryLimitExceeded',
+                            'created_at' => now()
+                        ]);
+                    }
+                }
+
+                // Add the expense
                 Expense::create([
                     'user_id' => $user->id,
                     'category_id' => $monthlyExpense->category_id,
@@ -227,12 +290,21 @@ class ExpenseController extends Controller
                     'description' => $monthlyExpense->description,
                 ]);
 
+                Notification::create([
+                    'user_id' => $user->id,
+                    'notification' => "Dépense mensuelle '{$monthlyExpense->name}' ajoutée avec succès",
+                    'type' => 'monthlyExpenseSuccess',
+                    'created_at' => now()
+                ]);
+
                 // Increment occurrences
                 $monthlyExpense->increment('occurrences');
+
+                // Update free margin for next iteration
+                $freeMargin -= $monthlyExpense->amount;
             }
         }
 
         return redirect()->route('expenses')->with('success', 'Dépenses mensuelles traitées');
     }
-    
 }

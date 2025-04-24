@@ -144,7 +144,7 @@
           :class="{ 'active-link': route().current('budgets') }"
         >
           <img src="@/Assets/IMG/budget.png" alt="Budgets" class="w-6 h-6 mr-4">
-          <span>revenus</span>
+          <span>Revenus</span>
         </Link>
         
         <Link
@@ -282,15 +282,19 @@ const handleNotificationClick = (notification) => {
   notificationDropdownOpen.value = false;
   
   switch (notification.type) {
-    case 'limit':
+    case 'categoryLimitExceeded':
       router.visit(route('categories'));
       break;
-    case 'monthlyexpense':
-      router.visit(route('expenses'));
+      case 'monthlyExpenseSuccess':
+      router.visit(route('history', { type: 'expense' }));
       break;
     case 'message':
       router.visit(route('dashContact'));
       break;
+    case 'monthlyExpenseFailed':
+      router.visit(route('expenses'));
+      break;
+  
   }
 };
 

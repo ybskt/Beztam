@@ -21,18 +21,37 @@ class DashboardController extends Controller
         $totalExpenses = Expense::where('user_id', $user->id)->sum('amount');
         $freeMargin = $totalBudgetFreeAmount - $totalExpenses;
         $totalBalance = $freeMargin + $totalSavings;
-
-        // Calculate data for doughnut chart
-        $budgetDistribution = [
-            'Marge Libre' => $freeMargin,
-            'Épargne' => $totalSavings
-        ];
-
+    
+        // Current month data for bar chart
+        $now = Carbon::now();
+        $monthlyBudgets = Budget::where('user_id', $user->id)
+            ->whereMonth('created_at', $now->month)
+            ->whereYear('created_at', $now->year)
+            ->sum('amount');
+        
+        $monthlyExpenses = Expense::where('user_id', $user->id)
+            ->whereMonth('created_at', $now->month)
+            ->whereYear('created_at', $now->year)
+            ->sum('amount');
+        
+        $monthlySavings = Saving::where('user_id', $user->id)
+            ->whereMonth('created_at', $now->month)
+            ->whereYear('created_at', $now->year)
+            ->sum('amount');
+    
         return Inertia::render('Dashboard/Dashboard', [
             'totalBalance' => (float)$totalBalance,
             'freeMargin' => (float)$freeMargin,
             'savings' => (float)$totalSavings,
-            'budgetDistributionData' => $budgetDistribution
+            'budgetDistributionData' => [
+                'Marge Libre' => $freeMargin,
+                'Épargne' => $totalSavings
+            ],
+            'monthlySummaryData' => [
+                'budgets' => $monthlyBudgets,
+                'expenses' => $monthlyExpenses,
+                'savings' => $monthlySavings
+            ]
         ]);
     }
 

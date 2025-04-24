@@ -111,7 +111,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/dashboard/daily-data', [DashboardController::class, 'getDailyData'])->name('dashboard.daily-data');
 
-
     // Budget Management
     Route::controller(BudgetController::class)->group(function () {
         Route::get('/dashboard/budgets', 'index')->name('budgets');
