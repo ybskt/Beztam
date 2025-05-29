@@ -1,7 +1,7 @@
 <template>
   <DashLayout>
     <div class="container mx-auto max-w-3xl py-6">
-      <!-- Flash Messages -->
+      <!-- Messages Flash -->
       <div v-if="$page.props.flash?.success" class="mb-4 p-4 bg-green-100 text-green-700 rounded-lg">
         {{ $page.props.flash.success }}
       </div>
@@ -9,11 +9,11 @@
         {{ $page.props.flash.error }}
       </div>
 
-      <!-- Profile Section -->
+      <!-- Section Profil -->
       <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
-        <h1 class="text-2xl font-bold text-[#1E293B] mb-6 text-center">Account Settings</h1>
-        
-        <!-- Profile Photo Section -->
+        <h1 class="text-2xl font-bold text-[#1E293B] mb-6 text-center">Paramètres du compte</h1>
+
+        <!-- Section Photo de Profil -->
         <div class="flex flex-col items-center mb-8">
           <div class="w-24 h-24 rounded-full bg-[#D1FAE5] flex items-center justify-center mb-4 overflow-hidden">
             <span v-if="!user.image" class="text-3xl font-semibold text-[#10B981]">
@@ -21,20 +21,20 @@
             </span>
             <img v-else :src="userImageUrl" class="w-full h-full object-cover">
           </div>
-          
+
           <div class="flex items-center gap-3">
-            <!-- Upload Button -->
+            <!-- Bouton Télécharger -->
             <div class="relative">
-              <input 
-                type="file" 
+              <input
+                type="file"
                 ref="photoInput"
-                class="hidden" 
+                class="hidden"
                 @change="handleImageUpload"
                 accept="image/jpeg,image/png"
                 :disabled="uploadInProgress"
               >
-              <button 
-                type="button" 
+              <button
+                type="button"
                 @click="selectNewPhoto"
                 class="px-4 py-2 bg-[#86EFAC] hover:bg-[#4ADE80] text-black font-semibold rounded-lg transition-all disabled:opacity-50"
                 :class="{ 'opacity-50': uploadInProgress }"
@@ -44,13 +44,13 @@
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  Uploading...
+                  Téléchargement...
                 </span>
-                <span v-else>{{ user.image ? 'Change Photo' : 'Upload Photo' }}</span>
+                <span v-else>{{ user.image ? 'Changer la photo' : 'Télécharger une photo' }}</span>
               </button>
             </div>
-            
-            <!-- Delete Button -->
+
+            <!-- Bouton Supprimer -->
             <button
               v-if="user.image"
               type="button"
@@ -63,38 +63,38 @@
                   <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                   <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
-                Deleting...
+                Suppression...
               </span>
-              <span v-else>Delete Photo</span>
+              <span v-else>Supprimer la photo</span>
             </button>
           </div>
-          
+
           <p v-if="imageError" class="mt-1 text-sm text-red-600">{{ imageError }}</p>
-          <p class="text-xs text-gray-500 mt-2">Accepted formats: JPG, PNG (max 1MB)</p>
+          <p class="text-xs text-gray-500 mt-2">Formats acceptés : JPG, PNG (max 1MB)</p>
         </div>
-        
-        <!-- Personal Info Form -->
+
+        <!-- Formulaire d'Informations Personnelles -->
         <form @submit.prevent="submitProfile">
           <div>
-            <h2 class="text-lg font-semibold text-[#1E293B] mb-4">Personal Information</h2>
+            <h2 class="text-lg font-semibold text-[#1E293B] mb-4">Informations personnelles</h2>
             <div class="space-y-4">
               <div>
-                <label for="first_name" class="block text-sm font-medium text-gray-700 mb-1">First Name</label>
-                <input 
-                  v-model="profileForm.first_name" 
-                  type="text" 
-                  id="first_name" 
+                <label for="first_name" class="block text-sm font-medium text-gray-700 mb-1">Prénom</label>
+                <input
+                  v-model="profileForm.first_name"
+                  type="text"
+                  id="first_name"
                   class="w-full border-2 rounded-lg p-2 border-[#D1FAE5] bg-slate-50 focus:outline-none focus:ring-2 focus:ring-[#10B981] focus:border-transparent"
                   :disabled="profileForm.processing"
                 >
                 <p v-if="profileForm.errors.first_name" class="mt-1 text-sm text-red-600">{{ profileForm.errors.first_name }}</p>
               </div>
               <div>
-                <label for="last_name" class="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
-                <input 
-                  v-model="profileForm.last_name" 
-                  type="text" 
-                  id="last_name" 
+                <label for="last_name" class="block text-sm font-medium text-gray-700 mb-1">Nom</label>
+                <input
+                  v-model="profileForm.last_name"
+                  type="text"
+                  id="last_name"
                   class="w-full border-2 rounded-lg p-2 border-[#D1FAE5] bg-slate-50 focus:outline-none focus:ring-2 focus:ring-[#10B981] focus:border-transparent"
                   :disabled="profileForm.processing"
                 >
@@ -102,10 +102,10 @@
               </div>
               <div>
                 <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                <input 
-                  v-model="profileForm.email" 
-                  type="email" 
-                  id="email" 
+                <input
+                  v-model="profileForm.email"
+                  type="email"
+                  id="email"
                   class="w-full border-2 rounded-lg p-2 border-[#D1FAE5] bg-slate-50 focus:outline-none focus:ring-2 focus:ring-[#10B981] focus:border-transparent"
                   :disabled="profileForm.processing"
                 >
@@ -113,8 +113,8 @@
               </div>
             </div>
             <div class="mt-6 flex justify-end">
-              <button 
-                type="submit" 
+              <button
+                type="submit"
                 :disabled="profileForm.processing"
                 class="px-6 py-2 bg-[#10B981] hover:bg-[#059669] text-white font-semibold rounded-lg transition-all disabled:opacity-50"
               >
@@ -123,55 +123,55 @@
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  Saving...
+                  Enregistrement...
                 </span>
-                <span v-else>Save Changes</span>
+                <span v-else>Enregistrer les modifications</span>
               </button>
             </div>
           </div>
         </form>
       </div>
-      
-      <!-- Password Section -->
+
+      <!-- Section Mot de Passe -->
       <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
-        <h2 class="text-lg font-semibold text-[#1E293B] mb-4">Password</h2>
+        <h2 class="text-lg font-semibold text-[#1E293B] mb-4">Mot de passe</h2>
         <form @submit.prevent="submitPassword">
           <div class="space-y-4">
             <div>
-              <label for="current_password" class="block text-sm font-medium text-gray-700 mb-1">Current Password</label>
-              <input 
-                v-model="passwordForm.current_password" 
-                type="password" 
-                id="current_password" 
+              <label for="current_password" class="block text-sm font-medium text-gray-700 mb-1">Mot de passe actuel</label>
+              <input
+                v-model="passwordForm.current_password"
+                type="password"
+                id="current_password"
                 class="w-full border-2 rounded-lg p-2 border-[#D1FAE5] bg-slate-50 focus:outline-none focus:ring-2 focus:ring-[#10B981] focus:border-transparent"
                 :disabled="passwordForm.processing"
               >
               <p v-if="passwordForm.errors.current_password" class="mt-1 text-sm text-red-600">{{ passwordForm.errors.current_password }}</p>
             </div>
             <div>
-              <label for="password" class="block text-sm font-medium text-gray-700 mb-1">New Password</label>
-              <input 
-                v-model="passwordForm.password" 
-                type="password" 
-                id="password" 
+              <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Nouveau mot de passe</label>
+              <input
+                v-model="passwordForm.password"
+                type="password"
+                id="password"
                 class="w-full border-2 rounded-lg p-2 border-[#D1FAE5] bg-slate-50 focus:outline-none focus:ring-2 focus:ring-[#10B981] focus:border-transparent"
                 :disabled="passwordForm.processing"
               >
               <p v-if="passwordForm.errors.password" class="mt-1 text-sm text-red-600">{{ passwordForm.errors.password }}</p>
             </div>
             <div>
-              <label for="password_confirmation" class="block text-sm font-medium text-gray-700 mb-1">Confirm New Password</label>
-              <input 
-                v-model="passwordForm.password_confirmation" 
-                type="password" 
-                id="password_confirmation" 
+              <label for="password_confirmation" class="block text-sm font-medium text-gray-700 mb-1">Confirmer le nouveau mot de passe</label>
+              <input
+                v-model="passwordForm.password_confirmation"
+                type="password"
+                id="password_confirmation"
                 class="w-full border-2 rounded-lg p-2 border-[#D1FAE5] bg-slate-50 focus:outline-none focus:ring-2 focus:ring-[#10B981] focus:border-transparent"
                 :disabled="passwordForm.processing"
               >
             </div>
             <div class="flex justify-end">
-              <button 
-                type="submit" 
+              <button
+                type="submit"
                 :disabled="passwordForm.processing"
                 class="px-6 py-2 bg-[#10B981] hover:bg-[#059669] text-white font-semibold rounded-lg transition-all disabled:opacity-50"
               >
@@ -180,21 +180,21 @@
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  Updating...
+                  Mise à jour...
                 </span>
-                <span v-else>Update Password</span>
+                <span v-else>Mettre à jour le mot de passe</span>
               </button>
             </div>
           </div>
         </form>
       </div>
-      
+
       <!-- Section Satisfaction -->
       <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
         <h2 class="text-lg font-semibold text-gray-800 mb-4">Évaluation de l'application</h2>
-        
+
         <div class="flex flex-col md:flex-row gap-6">
-          <!-- User Rating -->
+          <!-- Note Utilisateur -->
           <div class="flex-1">
             <h3 class="text-md font-medium text-gray-700 mb-3">Votre note</h3>
             <div class="flex justify-center space-x-1">
@@ -215,24 +215,23 @@
               {{ userRating ? `Vous avez noté ${userRating}/5` : 'Cliquez pour évaluer' }}
             </p>
           </div>
-
-          <!-- Global Rating -->
+          <!-- Note Moyenne -->
           <div class="flex-1">
             <h3 class="text-md font-medium text-gray-700 mb-3">Note moyenne</h3>
             <div class="bg-gray-50 rounded-lg p-4">
               <div class="flex items-center justify-center">
                 <div class="flex mr-2">
                   <template v-for="i in 5" :key="i">
-                    <span 
-                      v-if="i <= Math.floor(stats.average_rating)" 
+                    <span
+                      v-if="i <= Math.floor(stats.average_rating)"
                       class="text-yellow-400 text-xl"
                     >★</span>
-                    <span 
-                      v-else-if="i - 0.5 <= stats.average_rating" 
+                    <span
+                      v-else-if="i - 0.5 <= stats.average_rating"
                       class="text-yellow-400 text-xl"
                     >½</span>
-                    <span 
-                      v-else 
+                    <span
+                      v-else
                       class="text-gray-300 text-xl"
                     >★</span>
                   </template>
@@ -244,27 +243,28 @@
           </div>
         </div>
       </div>
-      <!-- Delete Account Section -->
+
+      <!-- Section Suppression de Compte -->
       <div class="bg-white rounded-xl shadow-sm p-6">
-        <h2 class="text-lg font-semibold text-[#1E293B] mb-4">Delete Account</h2>
-        <p class="text-sm text-gray-600 mb-4">Once your account is deleted, all of its resources and data will be permanently deleted.</p>
-        
-        <ConfirmationModal 
-          :show="confirmUserDeletion" 
+        <h2 class="text-lg font-semibold text-[#1E293B] mb-4">Supprimer le compte</h2>
+        <p class="text-sm text-gray-600 mb-4">Une fois votre compte supprimé, toutes ses ressources et données seront définitivement effacées.</p>
+
+        <ConfirmationModal
+          :show="confirmUserDeletion"
           @close="confirmUserDeletion = false"
-          title="Delete Account"
+          title="Supprimer le compte"
         >
           <template #content>
             <div class="space-y-4">
-              <p>Are you sure you want to delete your account?</p>
-              <p class="text-red-600 font-medium">This action cannot be undone. All your data will be permanently deleted.</p>
-              
+              <p>Êtes-vous sûr de vouloir supprimer votre compte ?</p>
+              <p class="text-red-600 font-medium">Cette action est irréversible. Toutes vos données seront définitivement supprimées.</p>
+
               <div>
-                <label for="delete_password" class="block text-sm font-medium text-gray-700 mb-1">Confirm your password</label>
-                <input 
-                  v-model="deleteAccountForm.password" 
-                  type="password" 
-                  id="delete_password" 
+                <label for="delete_password" class="block text-sm font-medium text-gray-700 mb-1">Confirmez votre mot de passe</label>
+                <input
+                  v-model="deleteAccountForm.password"
+                  type="password"
+                  id="delete_password"
                   class="w-full border-2 rounded-lg p-2 border-red-200 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
                   :disabled="deleteAccountForm.processing"
                 >
@@ -273,14 +273,14 @@
             </div>
           </template>
           <template #footer>
-            <button 
-              @click="confirmUserDeletion = false" 
+            <button
+              @click="confirmUserDeletion = false"
               class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg mr-2"
             >
-              Cancel
+              Annuler
             </button>
-            <button 
-              @click="deleteUser" 
+            <button
+              @click="deleteUser"
               class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg"
               :class="{ 'opacity-50': deleteAccountForm.processing }"
               :disabled="deleteAccountForm.processing"
@@ -290,59 +290,25 @@
                   <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                   <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
-                Deleting...
+                Suppression...
               </span>
-              <span v-else>Delete My Account</span>
+              <span v-else>Supprimer mon compte</span>
             </button>
           </template>
         </ConfirmationModal>
 
-        <!-- <ConfirmationModal 
-          :show="confirmPhotoDeletion" 
-          @close="confirmPhotoDeletion = false"
-          title="Delete Profile Photo"
-        >
-          <template #content>
-            Are you sure you want to delete your profile photo?
-          </template>
-          <template #footer>
-            <button 
-              @click="confirmPhotoDeletion = false" 
-              class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg mr-2"
-            >
-              Cancel
-            </button>
-            <button 
-              @click="deletePhoto" 
-              class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg"
-              :class="{ 'opacity-50': deleteInProgress }"
-              :disabled="deleteInProgress"
-            >
-              <span v-if="deleteInProgress">
-                <svg class="animate-spin -ml-1 mr-1 h-4 w-4 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                Deleting...
-              </span>
-              <span v-else>Delete Photo</span>
-            </button>
-          </template>
-        </ConfirmationModal> -->
-
         <div class="flex justify-end">
-          <button 
+          <button
             @click="confirmUserDeletion = true"
             class="px-6 py-2 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-lg transition-colors"
           >
-            Delete Account
+            Supprimer le compte
           </button>
         </div>
       </div>
     </div>
   </DashLayout>
 </template>
-
 <script setup>
 import { computed, ref } from 'vue';
 import { useForm, router } from '@inertiajs/vue3';
@@ -387,7 +353,7 @@ const deleteInProgress = ref(false);
 const confirmUserDeletion = ref(false);
 const confirmPhotoDeletion = ref(false);
 
-// Forms
+// Formulaires
 const profileForm = useForm({
   first_name: props.user.first_name,
   last_name: props.user.last_name,
@@ -403,20 +369,21 @@ const passwordForm = useForm({
 const deleteAccountForm = useForm({
   password: '',
 });
-// Computed properties
+
+// Propriétés calculées
 const userInitials = computed(() => {
   return props.user?.first_name?.[0]?.toUpperCase() || '';
 });
 
 const userImageUrl = computed(() => {
-  return props.user?.image 
-    ? props.user.image.startsWith('http') 
-      ? props.user.image 
+  return props.user?.image
+    ? props.user.image.startsWith('http')
+      ? props.user.image
       : `/storage/${props.user.image}`
     : null;
 });
 
-// Image handling
+// Gestion des images
 const selectNewPhoto = () => {
   photoInput.value?.click();
 };
@@ -424,52 +391,51 @@ const selectNewPhoto = () => {
 const handleImageUpload = async (event) => {
   const file = event.target.files?.[0];
   imageError.value = null;
-  
-  if (!file) return;
 
-  // Client-side validation
+  if (!file) return;
+  
+  // Validation côté client
   const validTypes = ['image/jpeg', 'image/png'];
   const maxSize = 1024 * 1024; // 1MB
-
+  
   if (!validTypes.includes(file.type)) {
-    imageError.value = 'Only JPG and PNG formats are accepted.';
+    imageError.value = 'Seuls les formats JPG et PNG sont acceptés.';
     return;
   }
-
+  
   if (file.size > maxSize) {
-    imageError.value = 'Image size must not exceed 1MB.';
+    imageError.value = 'La taille de l\'image ne doit pas dépasser 1MB.';
     return;
   }
 
   uploadInProgress.value = true;
-  
+
   try {
     const formData = new FormData();
     formData.append('photo', file);
-
     await router.post(route('settings.photo.upload'), formData, {
       preserveScroll: true,
       onSuccess: () => {
         imageError.value = null;
       },
       onError: (errors) => {
-        imageError.value = errors.photo || 'Error uploading image';
+        imageError.value = errors.photo || 'Erreur lors du téléchargement de l\'image';
       }
     });
   } catch (error) {
-    imageError.value = 'Error uploading image';
+    imageError.value = 'Erreur lors du téléchargement de l\'image';
   } finally {
     uploadInProgress.value = false;
-    event.target.value = ''; // Reset input
+    event.target.value = ''; // Réinitialiser l'input
   }
 };
 
 const deletePhoto = async () => {
   if (!props.user?.image) return;
-  
+
   deleteInProgress.value = true;
   confirmPhotoDeletion.value = false;
-  
+
   try {
     await router.delete(route('settings.photo.destroy'), {
       preserveScroll: true,
@@ -477,11 +443,11 @@ const deletePhoto = async () => {
         imageError.value = null;
       },
       onError: () => {
-        imageError.value = 'Error deleting image';
+        imageError.value = 'Erreur lors de la suppression de l\'image';
       }
     });
   } catch (error) {
-    imageError.value = 'Error deleting image';
+    imageError.value = 'Erreur lors de la suppression de l\'image';
   } finally {
     deleteInProgress.value = false;
   }
@@ -491,7 +457,7 @@ const submitProfile = () => {
   profileForm.put(route('settings.profile.update'), {
     preserveScroll: true,
     onError: () => {
-      // Handle errors
+      // Gérer les erreurs
     }
   });
 };
@@ -501,22 +467,22 @@ const submitPassword = () => {
     preserveScroll: true,
     onSuccess: () => passwordForm.reset(),
     onError: () => {
-      // Handle errors
+      // Gérer les erreurs
     }
   });
 };
 
-// Add reactive references
+// Références réactives
 const userRating = ref(props.user.rating ? Number(props.user.rating) : 0);
 const stats = ref({
   average_rating: props.stats.average_rating ? Number(props.stats.average_rating) : 0,
   total_ratings: props.stats.total_ratings || 0
 });
 
-// Update rating method
+// Méthode pour mettre à jour la note
 const updateRating = async (rating) => {
   userRating.value = rating;
-  
+
   try {
     const response = await axios.put(route('settings.rating.update'), { rating });
     stats.value = {
@@ -524,12 +490,13 @@ const updateRating = async (rating) => {
       total_ratings: Number(response.data.total_ratings)
     };
   } catch (error) {
-    console.error('Error updating rating:', error);
+    console.error('Erreur lors de la mise à jour de la note :', error);
   }
 };
+
 const deleteUser = () => {
   deleteAccountForm.delete(route('settings.account.destroy'), {
-    preserveScroll: false, // Important for redirect to work
+    preserveScroll: false, // Important pour que la redirection fonctionne
     onSuccess: () => {
     },
     onError: (errors) => {

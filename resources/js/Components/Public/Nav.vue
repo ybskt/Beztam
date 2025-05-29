@@ -24,7 +24,7 @@
         </Link>
 
         <Link :href="route('features')" class="text-black font-bold relative group" :class="{ 'text-[#5AE4A8]': $page.url.startsWith('/features') }">
-          Features
+          Fonctionnalités
           <span class="absolute left-0 right-0 -bottom-4 h-0.5 bg-[#5AE4A8] transform scale-x-0 group-hover:scale-x-100 transition-transform"></span>
         </Link>
 
@@ -72,7 +72,7 @@
           :class="{ 'text-[#5AE4A8]': $page.url.startsWith('/about') }"
           @click="mobileMenuOpen = false"
         >
-          About
+          À propos
         </Link>
         <Link 
           :href="route('contact')" 
