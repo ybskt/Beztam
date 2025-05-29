@@ -7,8 +7,12 @@
       </main>
     </div>
   </div>
+  <OllamaChat />
+
 </template>
 
 <script setup>
 import AdminNav from '@/Components/Admin/AdminNav.vue';
+import OllamaChat  from '@/Components/OllamaChat.vue';
+
 </script>

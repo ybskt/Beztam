@@ -23,7 +23,8 @@ use App\Http\Controllers\{
     SettingsController,
     ContactController,
     GuestContactController,
-    TestNotificationController
+    TestNotificationController,
+    OllamaController
 };
 
 // Admin Controllers
@@ -56,6 +57,12 @@ Route::get('/about', function () {
 
 Route::get('/contact', function () { return Inertia::render('Public/Contact');})->name('contact');
 Route::post('/contact', [GuestContactController::class, 'store'])->name('guest-contact.store');
+
+Route::post('/ollama/chat', [OllamaController::class, 'chat'])
+    ->name('ollama.chat')
+    ->middleware(['web']);
+
+
 /*--------------------------------------------------------------------------
 | Authentication Routes
 |--------------------------------------------------------------------------

@@ -154,6 +154,7 @@
 import { Link } from '@inertiajs/vue3';
 import { reactive, onMounted  } from 'vue';
 import DashLayout from '@/Layouts/DashLayout.vue';
+import axios from 'axios';
 import { Chart, registerables } from 'chart.js';
 Chart.register(...registerables);
 

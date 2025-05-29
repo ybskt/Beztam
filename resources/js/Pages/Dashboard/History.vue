@@ -54,7 +54,7 @@
                     class="px-2 py-1 rounded-full text-xs"
                     :class="typeClasses(transaction.type)"
                   >
-                    {{ transaction.type_label }}
+                    {{ getTypeLabel(transaction.type) }}
                   </span>
                 </td>
                 <td class="py-3 px-4 text-sm font-medium text-center">
@@ -101,7 +101,7 @@
               class="px-2 py-1 rounded-full text-xs"
               :class="typeClasses(transaction.type)"
             >
-              {{ transaction.type_label }}
+              {{ getTypeLabel(transaction.type) }}
             </span>
           </div>
           <div class="flex justify-between items-center mt-3">
@@ -208,7 +208,7 @@
                   class="px-2 py-1 rounded-full text-xs"
                   :class="typeClasses(selectedTransaction.type)"
                 >
-                  {{ selectedTransaction.type_label }}
+                  {{ getTypeLabel(selectedTransaction.type) }}
                 </span>
               </p>
             </div>
@@ -498,9 +498,19 @@ const applyFilter = () => {
   });
 };
 
+const getTypeLabel = (type) => {
+  const labels = {
+    'revenu': 'Revenu',
+    'expense': 'Dépense',
+    'saving': 'Épargne',
+    'budget': 'Revenu' // Map 'budget' to 'Revenu' for display
+  };
+  return labels[type] || type;
+};
+
 const typeClasses = (type) => {
   return {
-    'bg-blue-100 text-blue-800': type === 'revenu',
+    'bg-blue-100 text-blue-800': type === 'revenu' || type === 'budget',
     'bg-red-100 text-red-800': type === 'expense',
     'bg-green-100 text-green-800': type === 'saving'
   };
@@ -571,6 +581,7 @@ const submitEditForm = () => {
   
   switch (editForm.type) {
     case 'revenu':
+    case 'budget':
       routeName = 'budgets.update';
       break;
     case 'expense':
@@ -606,6 +617,7 @@ const deleteTransaction = () => {
   let routeName;
   switch (transactionToDelete.value.type) {
     case 'revenu':
+    case 'budget':
       routeName = 'budgets.destroy';
       break;
     case 'expense':

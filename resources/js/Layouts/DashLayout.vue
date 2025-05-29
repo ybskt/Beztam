@@ -6,9 +6,13 @@
         <slot />
       </div>
     </main>
+    <OllamaChat />
+
   </div>
 </template>
 
 <script setup>
-import DashNav from '@/Components/Dashboard/DashNav.vue'
+import DashNav from '@/Components/Dashboard/DashNav.vue';
+import OllamaChat  from '@/Components/OllamaChat.vue';
+
 </script>
