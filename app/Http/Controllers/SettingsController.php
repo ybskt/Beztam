@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User; 
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -14,13 +14,18 @@ class SettingsController extends Controller
 {
     public function index()
     {
+        $user = Auth::user();
+        
+        // Get current stats
+        $avgRating = User::whereNotNull('rating')->avg('rating');
+        $totalRatings = User::whereNotNull('rating')->count();
+        
         return inertia('Dashboard/Settings', [
-            'user' => Auth::user(),
+            'user' => $user,
             'stats' => [
-            'average_rating' => (float) User::whereNotNull('rating')->avg('rating') ?? 0.0,
-            'total_ratings' => (int) User::whereNotNull('rating')->count()
-                ],
-            'flash' => session()->get('flash', [])
+                'average_rating' => $avgRating ? (float) $avgRating : 0.0,
+                'total_ratings' => (int) $totalRatings
+            ]
         ]);
     }
 
@@ -36,9 +41,7 @@ class SettingsController extends Controller
 
         $user->update($validated);
 
-        return redirect()->route('settings')->with('flash', [
-            'success' => 'Profile updated successfully.'
-        ]);
+        return redirect()->route('settings')->with('success', 'Profil mis à jour avec succès');
     }
 
     public function uploadPhoto(Request $request)
@@ -49,47 +52,37 @@ class SettingsController extends Controller
             ]);
 
             $user = Auth::user();
+
             $this->storeProfilePhoto($user, $request->file('photo'));
+
             $user->save();
 
-            return back()->with('flash', [
-                'success' => 'Profile photo updated successfully.'
-            ]);
+            return back()->with('success', 'Photo de profil mise à jour avec succès');
 
         } catch (\Exception $e) {
-            return back()->with('flash', [
-                'error' => 'Error uploading photo: '.$e->getMessage()
-            ]);
+            return back()->with('error', 'Erreur lors du téléchargement de la photo: '.$e->getMessage());
         }
     }
 
     protected function storeProfilePhoto($user, $photo)
     {
-        // Delete old photo if exists
         if ($user->image) {
             Storage::disk('public')->delete($user->image);
         }
 
-        // Generate filename
         $filename = 'user_'.$user->id.'_'.time().'.'.$photo->getClientOriginalExtension();
         $path = 'profile_images/'.$filename;
 
         try {
-            // For Intervention Image 3.x
             $manager = ImageManager::withDriver('gd');
             $image = $manager->read($photo->getRealPath());
             $image->cover(200, 200);
-            
-            // Store image in public/profile_images
+           
             Storage::disk('public')->put($path, $image->toPng()->toString());
-
-            // Update user with relative path
             $user->image = $path;
+
         } catch (\Exception $e) {
-            // Log the specific error
             \Log::error('Image processing error: ' . $e->getMessage());
-            
-            // Fallback to basic file storage if image processing fails
             Storage::disk('public')->putFileAs('profile_images', $photo, $filename);
             $user->image = $path;
         }
@@ -106,14 +99,10 @@ class SettingsController extends Controller
                 $user->save();
             }
 
-            return back()->with('flash', [
-                'success' => 'Profile photo removed.'
-            ]);
+            return back()->with('success', 'Photo de profil supprimée avec succès');
 
         } catch (\Exception $e) {
-            return back()->with('flash', [
-                'error' => 'Error removing photo: '.$e->getMessage()
-            ]);
+            return back()->with('error', 'Erreur lors de la suppression de la photo: '.$e->getMessage());
         }
     }
 
@@ -128,25 +117,39 @@ class SettingsController extends Controller
             'password' => Hash::make($request->password)
         ]);
 
-        return back()->with('flash', [
-            'success' => 'Password updated successfully.'
-        ]);
+        return back()->with('success', 'Mot de passe mis à jour avec succès');
     }
 
     public function updateRating(Request $request)
     {
-        $request->validate([
-            'rating' => ['required', 'numeric', 'min:1', 'max:5']
-        ]);
-    
-        $user = Auth::user();
-        $user->rating = $request->rating;
-        $user->save();
-    
-        return response()->json([
-            'average_rating' => (float) User::whereNotNull('rating')->avg('rating') ?: 0,
-            'total_ratings' => (int) User::whereNotNull('rating')->count()
-        ]);
+        try {
+            $request->validate([
+                'rating' => ['required', 'numeric', 'min:1', 'max:5']
+            ]);
+
+            $user = Auth::user();
+            $user->rating = $request->rating;
+            $user->save();
+
+            // Recalculate stats after update
+            $avgRating = User::whereNotNull('rating')->avg('rating');
+            $totalRatings = User::whereNotNull('rating')->count();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Évaluation mise à jour avec succès',
+                'average_rating' => $avgRating ? (float) $avgRating : 0.0,
+                'total_ratings' => (int) $totalRatings,
+                'user_rating' => (int) $request->rating
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors de la mise à jour de l\'évaluation',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     public function destroyAccount(Request $request)
@@ -154,36 +157,25 @@ class SettingsController extends Controller
         $request->validate([
             'password' => ['required', 'current_password'],
         ]);
-    
+
         try {
             $user = $request->user();
-    
-            // Delete profile photo if exists
+
             if ($user->image) {
                 Storage::disk('public')->delete($user->image);
             }
-    
-            // Logout before deletion to prevent session issues
+
             Auth::logout();
-    
-            // Delete the user
+
             $user->delete();
-    
-            // Invalidate session
+
             $request->session()->invalidate();
             $request->session()->regenerateToken();
-    
-            // Redirect to login page with success message
-            return redirect()->route('login')->with('flash', [
-                'success' => 'Your account has been permanently deleted.'
-            ]);
-    
+
+            return redirect()->route('login')->with('success', 'Votre compte a été supprimé avec succès');
+
         } catch (\Exception $e) {
-            return back()->with('flash', [
-                'error' => 'Error deleting account: '.$e->getMessage()
-            ]);
+            return back()->with('error', 'Erreur lors de la suppression du compte: '.$e->getMessage());
         }
     }
-
-    
 }

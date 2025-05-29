@@ -61,28 +61,29 @@ class DashboardController extends Controller
         $now = Carbon::now();
         $currentDay = $now->day;
         $daysInMonth = $now->daysInMonth;
-        
+
         $dailyData = [];
-        
-        for ($day = 1; $day <= $daysInMonth; $day++) {
+        $labels = range(1, $daysInMonth);
+
+        for ($day = 1; $day <= $currentDay; $day++) {
             $date = Carbon::create($now->year, $now->month, $day);
-            
+
             // Calculate daily values
             $dailyBudget = Budget::where('user_id', $user->id)
                 ->whereDate('created_at', '<=', $date)
                 ->sum('free_amount');
-                
+            
             $dailySavings = Saving::where('user_id', $user->id)
                 ->whereDate('created_at', '<=', $date)
                 ->sum('amount');
-                
+            
             $dailyExpenses = Expense::where('user_id', $user->id)
                 ->whereDate('created_at', '<=', $date)
                 ->sum('amount');
-                
+            
             $dailyFreeMargin = $dailyBudget - $dailyExpenses;
             $dailyBalance = $dailyFreeMargin + $dailySavings;
-            
+
             $dailyData[$day] = [
                 'balance' => $dailyBalance,
                 'free_margin' => $dailyFreeMargin,
@@ -92,8 +93,19 @@ class DashboardController extends Controller
             ];
         }
 
+        // Remplir les jours futurs avec des valeurs nulles
+        for ($day = $currentDay + 1; $day <= $daysInMonth; $day++) {
+            $dailyData[$day] = [
+                'balance' => null,
+                'free_margin' => null,
+                'savings' => null,
+                'budgets' => null,
+                'expenses' => null
+            ];
+        }
+
         return response()->json([
-            'labels' => array_keys($dailyData),
+            'labels' => $labels,
             'data' => array_values($dailyData),
             'currentDay' => $currentDay
         ]);

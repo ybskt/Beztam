@@ -205,7 +205,7 @@ const initCharts = async () => {
     }
 
     // Daily Evolution Chart
-    const dailyResponse = await axios.get(route('dashboard.daily-data'));
+   const dailyResponse = await axios.get(route('dashboard.daily-data'));
     const dailyData = dailyResponse.data;
     
     const dailyCtx = document.getElementById('dailyEvolutionChart');
@@ -217,27 +217,36 @@ const initCharts = async () => {
           datasets: [
             {
               label: 'Solde Total',
-              data: dailyData.data.map(item => item.balance),
+              data: dailyData.data.map((item, index) => 
+                index < dailyData.currentDay ? item.balance : null
+              ),
               borderColor: '#5AE4A8',
               backgroundColor: 'rgba(90, 228, 168, 0.1)',
               borderWidth: 2,
-              tension: 0.4
+              tension: 0.4,
+              spanGaps: true
             },
             {
               label: 'Marge Libre',
-              data: dailyData.data.map(item => item.free_margin),
+              data: dailyData.data.map((item, index) => 
+                index < dailyData.currentDay ? item.free_margin : null
+              ),
               borderColor: '#3B82F6',
               backgroundColor: 'rgba(59, 130, 246, 0.1)',
               borderWidth: 2,
-              tension: 0.4
+              tension: 0.4,
+              spanGaps: true
             },
             {
               label: 'Épargne',
-              data: dailyData.data.map(item => item.savings),
+              data: dailyData.data.map((item, index) => 
+                index < dailyData.currentDay ? item.savings : null
+              ),
               borderColor: '#EF4444',
               backgroundColor: 'rgba(239, 68, 68, 0.1)',
               borderWidth: 2,
-              tension: 0.4
+              tension: 0.4,
+              spanGaps: true
             }
           ]
         },
@@ -286,19 +295,25 @@ const initCharts = async () => {
           datasets: [
             {
               label: 'Variation Revenus',
-              data: dailyData.data.map(item => item.budgets),
+              data: dailyData.data.map((item, index) => 
+                index < dailyData.currentDay ? item.budgets : null
+              ),
               borderColor: '#5AE4A8',
               backgroundColor: 'rgba(90, 228, 168, 0.1)',
               borderWidth: 2,
-              tension: 0.4
+              tension: 0.4,
+              spanGaps: true
             },
             {
               label: 'Variation Dépenses',
-              data: dailyData.data.map(item => item.expenses),
+              data: dailyData.data.map((item, index) => 
+                index < dailyData.currentDay ? item.expenses : null
+              ),
               borderColor: '#EF4444',
               backgroundColor: 'rgba(239, 68, 68, 0.1)',
               borderWidth: 2,
-              tension: 0.4
+              tension: 0.4,
+              spanGaps: true
             }
           ]
         },
@@ -336,7 +351,6 @@ const initCharts = async () => {
         }
       });
     }
-
   } catch (error) {
     console.error('Error initializing charts:', error);
   }

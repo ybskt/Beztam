@@ -124,10 +124,6 @@
                 <span>Dépense Totale:</span>
                 <span class="font-medium">{{ formatCurrency(category.total_expenses) }}</span>
               </div>
-              <div class="flex justify-between py-2 border-b border-gray-100">
-                <span>Dépense Mensuelle:</span>
-                <span class="font-medium">{{ formatCurrency(category.monthly_expenses) }}</span>
-              </div>
               <div class="flex justify-between py-2">
                 <span>Limite:</span>
                 <span class="font-medium">
@@ -169,7 +165,7 @@
   </template>
   
   <script setup>
-  import { Link, useForm, router } from '@inertiajs/vue3';
+  import { useForm, router } from '@inertiajs/vue3';
   import { ref, onMounted  } from 'vue';
   import DashLayout from '@/Layouts/DashLayout.vue';
   import ConfirmationModal from '@/Components/Dashboard/ConfirmationModal.vue';

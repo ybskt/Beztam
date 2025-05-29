@@ -30,6 +30,9 @@
 
         <Link :href="route('about')" class="text-black font-bold relative group" :class="{ 'text-[#5AE4A8]': $page.url.startsWith('/about') }">
           À propos
+
+
+
           <span class="absolute left-0 right-0 -bottom-4 h-0.5 bg-[#5AE4A8] transform scale-x-0 group-hover:scale-x-100 transition-transform"></span>
         </Link>
 
@@ -40,7 +43,7 @@
       </div>
 
       <div class="hidden md:flex space-x-4 items-center">
-        <Link :href="route('login')" class="rounded-xl py-2 px-6 bg-green-300 hover:bg-green-400 border-2 border-green-300 hover:border-black text-black font-bold transition-all">Log in</Link>
+        <Link :href="route('login')" class="rounded-xl py-2 px-6 bg-green-300 hover:bg-green-400 border-2 border-green-300 hover:border-black text-black font-bold transition-all">Se connecter</Link>
       </div>
     </div>
 

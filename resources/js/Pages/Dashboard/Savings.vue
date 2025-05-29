@@ -136,6 +136,12 @@
               Transférer
             </button>
           </div>
+          <!-- Error message display -->
+          <div v-if="transferError" class="mt-2 text-sm text-red-600 text-center sm:text-right">
+            {{ transferError }}
+          </div>
+
+          
         </form>
       </div>
     </div>
@@ -152,10 +158,11 @@
 
 <script setup>
 import { Link } from '@inertiajs/vue3';
-import { reactive, onMounted  } from 'vue';
+import { reactive, ref, onMounted } from 'vue';
 import DashLayout from '@/Layouts/DashLayout.vue';
 import axios from 'axios';
 import { Chart, registerables } from 'chart.js';
+
 Chart.register(...registerables);
 
 const props = defineProps({
@@ -195,10 +202,12 @@ const transferForm = reactive({
     amount: ''
 });
 
+const transferError = ref('');
+
 const formatCurrency = (amount) => {
     amount = typeof amount === 'number' ? amount : parseFloat(amount) || 0;
-    return new Intl.NumberFormat('fr-FR', { 
-        style: 'currency', 
+    return new Intl.NumberFormat('fr-FR', {
+        style: 'currency',
         currency: 'MAD',
         minimumFractionDigits: 2,
         maximumFractionDigits: 2
@@ -254,7 +263,6 @@ const updateSavingsRate = async () => {
             alert('Le pourcentage doit être entre 0 et 100');
             return;
         }
-
         await axios.post('/savings/rate', { percentage });
         window.location.reload();
     } catch (error) {
@@ -264,108 +272,117 @@ const updateSavingsRate = async () => {
 };
 
 const transferToMargin = async () => {
+    transferError.value = ''; // Reset error message
+    
     try {
         const amount = parseFloat(transferForm.amount);
         if (isNaN(amount)) {
-            alert('Montant invalide');
-            return;
-        }
-        
-        if (amount <= 0) {
-            alert('Le montant doit être positif');
+            transferError.value = 'Montant invalide';
             return;
         }
 
-        await axios.post('/savings/transfer', { amount });
-        transferForm.amount = '';
-        window.location.reload();
+        if (amount <= 0) {
+            transferError.value = 'Le montant doit être positif';
+            return;
+        }
+
+        const response = await axios.post('/savings/transfer', { amount });
+        
+        if (response.data.success) {
+            transferForm.amount = '';
+            window.location.reload();
+        } else {
+            transferError.value = response.data.message || 'Erreur lors du transfert';
+        }
     } catch (error) {
         console.error('Transfer error:', error);
-        const message = error.response?.data?.message || 
-                       (error.response?.status === 422 ? 'Montant invalide' : 'Erreur de transfert');
-        alert(message);
+        
+        if (error.response?.status === 422) {
+            transferError.value = error.response.data.message || 'Montant invalide';
+        } else if (error.response?.status === 403) {
+            transferError.value = 'Le montant dépasse votre épargne totale';
+        } else {
+            transferError.value = error.response?.data?.message || 'Erreur de transfert. Veuillez réessayer.';
+        }
     }
 };
 
 const initDailySavingsChart = async () => {
-  try {
-    const response = await axios.get(route('savings.daily-data'));
-    const { labels, data } = response.data;
-
-    const ctx = document.getElementById('dailySavingsChart');
-    if (!ctx) return;
-
-    // Destroy previous chart instance if exists
-    if (ctx.chart) {
-      ctx.chart.destroy();
-    }
-
-    ctx.chart = new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: labels,
-        datasets: [{
-          label: 'Épargnes quotidiennes',
-          data: data,
-          borderColor: '#3B82F6', // Blue color
-          backgroundColor: 'rgba(59, 130, 246, 0.1)',
-          borderWidth: 2,
-          fill: true,
-          tension: 0.4,
-          spanGaps: true
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
-            position: 'top',
-          },
-          tooltip: {
-            callbacks: {
-              label: function(context) {
-                return context.raw !== null 
-                  ? `${context.dataset.label}: ${formatCurrency(context.raw)}`
-                  : 'Pas de données';
-              }
-            }
-          }
-        },
-        scales: {
-          y: {
-            beginAtZero: false, // Savings can be negative (transfers)
-            ticks: {
-              callback: function(value) {
-                return formatCurrency(value);
-              }
-            }
-          },
-          x: {
-            title: {
-              display: true,
-              text: 'Jour du mois'
-            }
-          }
+    try {
+        const response = await axios.get(route('savings.daily-data'));
+        const { labels, data } = response.data;
+        const ctx = document.getElementById('dailySavingsChart');
+        
+        if (!ctx) return;
+        
+        // Destroy previous chart instance if exists
+        if (ctx.chart) {
+            ctx.chart.destroy();
         }
-      }
-    });
-
-  } catch (error) {
-    console.error('Error initializing savings chart:', error);
-    
-    // Display error message to user
-    if (error.response?.status === 401) {
-      alert('Veuillez vous reconnecter');
-    } else {
-      alert('Erreur lors du chargement des données. Veuillez réessayer.');
+        
+        ctx.chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Épargnes quotidiennes',
+                    data: data,
+                    borderColor: '#3B82F6', // Blue color
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4,
+                    spanGaps: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.raw !== null
+                                    ? `${context.dataset.label}: ${formatCurrency(context.raw)}`
+                                    : 'Pas de données';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: false, // Savings can be negative (transfers)
+                        ticks: {
+                            callback: function(value) {
+                                return formatCurrency(value);
+                            }
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Jour du mois'
+                        }
+                    }
+                }
+            }
+        });
+    } catch (error) {
+        console.error('Error initializing savings chart:', error);
+        
+        // Display error message to user
+        if (error.response?.status === 401) {
+            alert('Veuillez vous reconnecter');
+        } else {
+            alert('Erreur lors du chargement des données. Veuillez réessayer.');
+        }
     }
-  }
 };
 
-// Call it in onMounted
 onMounted(() => {
-  initDailySavingsChart();
+    initDailySavingsChart();
 });
-
 </script>

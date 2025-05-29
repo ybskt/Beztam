@@ -173,7 +173,7 @@ Route::middleware('auth')->group(function () {
         Route::delete('/settings/photo', 'destroyPhoto')->name('settings.photo.destroy');
         Route::delete('/settings/account', 'destroyAccount')->name('settings.account.destroy');
         Route::post('/settings/photo', 'uploadPhoto')->name('settings.photo.upload');
-        
+        Route::put('/settings/rating', 'updateRating')->name('settings.rating.update');
     });
 
 

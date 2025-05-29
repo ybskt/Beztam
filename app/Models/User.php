@@ -22,6 +22,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'email',
         'password',
         'savings_rate',
+        'rating',
         'image' 
     ];
 
@@ -148,4 +149,6 @@ class User extends Authenticatable implements MustVerifyEmail
             ->join('')
             ->toUpperCase();
     }
+
+    
 }

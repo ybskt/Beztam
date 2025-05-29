@@ -440,7 +440,7 @@ const selectedTransaction = ref(null);
 
 const filters = [
   { value: 'all', label: 'Tous' },
-  { value: 'revenu', label: 'Revenu' },
+  { value: 'budget', label: 'Revenu' },
   { value: 'expense', label: 'Dépense' },
   { value: 'saving', label: 'Épargne' }
 ];

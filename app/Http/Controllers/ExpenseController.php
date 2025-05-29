@@ -29,12 +29,13 @@ class ExpenseController extends Controller
             'categories' => Category::where('user_id', $user->id)->get()->toArray(), // Ensure it's converted to array
             'recentExpenses' => Expense::with('category')
                 ->where('user_id', $user->id)
-                ->orderBy('date', 'desc')
-                ->orderBy('id', 'desc')
+                ->orderBy('created_at', 'desc')
+                ->orderBy('id', direction: 'desc')
                 ->limit(8)
                 ->get(),
             'monthlyExpenses' => MonthlyExpense::with('category')
                 ->where('user_id', $user->id)
+                ->orderBy('day_of_month', direction: 'asc')
                 ->get(),
             'totalBalance' => (float)$totalBalance,
             'freeMargin' => (float)$freeMargin,

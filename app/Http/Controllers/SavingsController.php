@@ -29,6 +29,8 @@ class SavingsController extends Controller
         'savingsRate' => (int)$user->savings_rate, // Ensure integer type
         'recentSavings' => $user->savings()
             ->where('amount', '>=', 0)
+            ->orderBy('created_at', 'desc')
+            ->orderBy('id', direction: 'desc')
             ->latest()
             ->take(6)
             ->get()
@@ -122,7 +124,10 @@ class SavingsController extends Controller
         $totalSavings = $user->savings()->sum('amount');
 
         if ($request->amount > $totalSavings) {
-            return redirect()->back()->with('error', 'Le montant du transfert dépasse l\'épargne totale!');
+            return response()->json([
+                'success' => false,
+                'message' => 'Le montant du transfert dépasse l\'épargne totale!'
+            ], 422);
         }
 
         // Create budget entry
@@ -142,7 +147,10 @@ class SavingsController extends Controller
             'date' => now()->format('Y-m-d'),
         ]);
 
-        return redirect()->back()->with('success', 'Montant transféré à la marge libre!');
+        return response()->json([
+            'success' => true,
+            'message' => 'Montant transféré à la marge libre!'
+        ]);
     }
 
     public function getDailySavingsData()

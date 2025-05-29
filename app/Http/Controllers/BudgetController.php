@@ -26,7 +26,7 @@ class BudgetController extends Controller
         // Recent budgets (last 7) with formatted dates
         $recentBudgets = Budget::where('user_id', $user->id)
             ->orderBy('created_at', 'desc')
-            ->orderBy('id', 'desc')
+            ->orderBy('id', direction: 'desc')
             ->limit(7)
             ->get()
             ->map(function ($budget) {
@@ -35,7 +35,7 @@ class BudgetController extends Controller
             });
            
         // Monthly budgets with day of month handling
-        $monthlyBudgets = MonthlyBudget::where('user_id', $user->id)->get();
+        $monthlyBudgets = MonthlyBudget::where('user_id', $user->id)->orderBy('day_of_month', direction: 'asc')->get();
 
         return inertia('Dashboard/Budgets', [
             'totalBalance' => (float)$totalBalance,
@@ -66,7 +66,7 @@ class BudgetController extends Controller
        
         if ($request->is_monthly) {
             // Handle day of month for monthly budgets (including February 28/29)
-            $dayOfMonth = now()->day;
+            $dayOfMonth = Carbon::parse($date)->day;
            
             // Add to monthly budgets
             MonthlyBudget::create([

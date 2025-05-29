@@ -143,7 +143,6 @@ class CategoriesController extends Controller
         }
 
         return response()->json([
-            'monthlyConsumption' => $monthlyData,
             'dailyExpenses' => [
                 'labels' => range(1, $daysInMonth),
                 'datasets' => $dailyData,
