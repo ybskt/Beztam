@@ -23,9 +23,9 @@
         <div class="flex flex-col items-center">
           <h3 class="text-lg font-bold mb-6">Liens</h3>
           <div class="flex flex-row md:flex-col space-x-4 md:space-x-0">
-            <Link :href="route('home')" class="text-sm hover:text-green-600 md:mb-3">Home</Link>
-            <Link :href="route('features')" class="text-sm hover:text-green-600 md:mb-3">Features</Link>
-            <Link :href="route('about')" class="text-sm hover:text-green-600 md:mb-3">About</Link>
+            <Link :href="route('home')" class="text-sm hover:text-green-600 md:mb-3">Accueil</Link>
+            <Link :href="route('features')" class="text-sm hover:text-green-600 md:mb-3">Fonctionnalités</Link>
+            <Link :href="route('about')" class="text-sm hover:text-green-600 md:mb-3">À propos</Link>
             <Link :href="route('contact')" class="text-sm hover:text-green-600">Contact</Link>
           </div>
         </div>

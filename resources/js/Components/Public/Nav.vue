@@ -56,7 +56,7 @@
           :class="{ 'text-[#5AE4A8]': $page.url === '/' }"
           @click="mobileMenuOpen = false"
         >
-          Home
+          Accueil
         </Link>
         <Link 
           :href="route('features')" 
@@ -64,7 +64,7 @@
           :class="{ 'text-[#5AE4A8]': $page.url.startsWith('/features') }"
           @click="mobileMenuOpen = false"
         >
-          Features
+          Fonctionnalités
         </Link>
         <Link 
           :href="route('about')" 
@@ -88,7 +88,7 @@
             class="block text-center rounded-xl py-2 px-6 bg-green-300 hover:bg-green-400 border-2 border-green-300 hover:border-black text-black font-bold transition-all"
             @click="mobileMenuOpen = false"
           >
-            Log in
+            Se connecter
           </Link>
         </div>
       </div>
