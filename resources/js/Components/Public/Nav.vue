@@ -19,7 +19,7 @@
       <!-- Desktop Navigation -->
       <div class="hidden md:flex space-x-8 items-center">
         <Link :href="route('home')" class="text-black font-bold relative group" :class="{ 'text-[#5AE4A8]': $page.url === '/' }">
-          Home
+          Accueil
           <span class="absolute left-0 right-0 -bottom-4 h-0.5 bg-[#5AE4A8] transform scale-x-0 group-hover:scale-x-100 transition-transform"></span>
         </Link>
 
@@ -29,7 +29,7 @@
         </Link>
 
         <Link :href="route('about')" class="text-black font-bold relative group" :class="{ 'text-[#5AE4A8]': $page.url.startsWith('/about') }">
-          About
+          À propos
           <span class="absolute left-0 right-0 -bottom-4 h-0.5 bg-[#5AE4A8] transform scale-x-0 group-hover:scale-x-100 transition-transform"></span>
         </Link>
 
@@ -72,7 +72,7 @@
           :class="{ 'text-[#5AE4A8]': $page.url.startsWith('/about') }"
           @click="mobileMenuOpen = false"
         >
-          À propos
+         À propos
         </Link>
         <Link 
           :href="route('contact')" 
