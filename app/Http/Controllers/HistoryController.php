@@ -87,7 +87,8 @@ class HistoryController extends Controller
     private function getBudgetTransactions($perPage)
     {
         return Budget::where('user_id', Auth::id())
-            ->orderBy('date', 'desc')
+            ->orderBy('date', direction: 'desc')
+            ->orderBy('id', direction: 'desc')
             ->paginate($perPage)
             ->through(function ($budget) {
                 return $this->formatTransaction($budget);
@@ -100,6 +101,7 @@ class HistoryController extends Controller
         return Expense::where('user_id', Auth::id())
             ->with('category')
             ->orderBy('date', 'desc')
+            ->orderBy('id', direction: 'desc')
             ->paginate($perPage)
             ->through(function ($expense) {
                 return $this->formatTransaction($expense);
@@ -112,6 +114,7 @@ class HistoryController extends Controller
         return Saving::where('user_id', Auth::id())
             ->where('amount', '>', 0)
             ->orderBy('date', 'desc')
+            ->orderBy('id', direction: 'desc')
             ->paginate($perPage)
             ->through(function ($saving) {
                 return $this->formatTransaction($saving);
