@@ -163,94 +163,131 @@
     </div>
     </DashLayout>
   </template>
-  
-  <script setup>
-  import { useForm, router } from '@inertiajs/vue3';
-  import { ref, onMounted  } from 'vue';
-  import DashLayout from '@/Layouts/DashLayout.vue';
-  import ConfirmationModal from '@/Components/Dashboard/ConfirmationModal.vue';
-  import EditCategoryModal from '@/Components/Dashboard/EditCategoryModal.vue';
-  import { Chart, registerables } from 'chart.js';
-  Chart.register(...registerables);
-  
-  const props = defineProps({
-    categories: Array,
-    consumptionData: Object
-  });
-  
-  const form = useForm({
-    name: '',
-    limit: null
-  });
-  
-  const deleteForm = useForm({});
-  
-  const showDeleteModal = ref(false);
-  const showEditModal = ref(false);
-  const selectedCategory = ref(null);
-  const categoryToDelete = ref(null);
-  
-  const formatCurrency = (amount) => {
-    if (amount === null || amount === undefined) return 'N/A';
-    return new Intl.NumberFormat('fr-FR', { 
-      style: 'currency', 
-      currency: 'MAD',
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    }).format(amount);
-  };
-  
-  const submit = () => {
-    form.post(route('categories.store'), {
-      preserveScroll: true,
-      onSuccess: () => {
-        form.reset();
-        router.reload({ only: ['categories'] });
-      }
-    });
-  };
-  
-  const fetchCategories = () => {
-    router.reload({ only: ['categories'] });
-  };
-  
-  const openEditModal = (category) => {
-    if (category.name === 'Autre') return;
-    selectedCategory.value = category;
-    showEditModal.value = true;
-  };
-  
-  const confirmDelete = (category) => {
-    if (category.name === 'Autre') return;
-    categoryToDelete.value = category;
-    showDeleteModal.value = true;
-  };
-  
-  const deleteCategory = () => {
-    deleteForm.delete(route('categories.destroy', categoryToDelete.value.id), {
-      preserveScroll: true,
-      onSuccess: () => {
-        showDeleteModal.value = false;
-        router.reload({ only: ['categories'] });
-      }
-    });
-  };
+<script setup>
+import { useForm, router } from '@inertiajs/vue3';
+import axios from 'axios';
+import { ref, onMounted } from 'vue';
+import DashLayout from '@/Layouts/DashLayout.vue';
+import ConfirmationModal from '@/Components/Dashboard/ConfirmationModal.vue';
+import EditCategoryModal from '@/Components/Dashboard/EditCategoryModal.vue';
+import { Chart, registerables } from 'chart.js';
 
-  const initMonthlyConsumptionChart = async () => {
+Chart.register(...registerables);
+
+const props = defineProps({
+  categories: Array,
+  consumptionData: Object
+});
+
+const form = useForm({
+  name: '',
+  limit: null
+});
+
+const deleteForm = useForm({});
+
+const showDeleteModal = ref(false);
+const showEditModal = ref(false);
+const selectedCategory = ref(null);
+const categoryToDelete = ref(null);
+
+const formatCurrency = (amount) => {
+  if (amount === null || amount === undefined) return 'N/A';
+  return new Intl.NumberFormat('fr-FR', {
+    style: 'currency',
+    currency: 'MAD',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  }).format(amount);
+};
+
+const submit = () => {
+  form.post(route('categories.store'), {
+    preserveScroll: true,
+    onSuccess: () => {
+      form.reset();
+      router.reload({ only: ['categories'] });
+    }
+  });
+};
+
+const fetchCategories = () => {
+  router.reload({ only: ['categories'] });
+};
+
+const openEditModal = (category) => {
+  if (category.name === 'Autre') return;
+  selectedCategory.value = category;
+  showEditModal.value = true;
+};
+
+const confirmDelete = (category) => {
+  if (category.name === 'Autre') return;
+  categoryToDelete.value = category;
+  showDeleteModal.value = true;
+};
+
+const deleteCategory = () => {
+  deleteForm.delete(route('categories.destroy', categoryToDelete.value.id), {
+    preserveScroll: true,
+    onSuccess: () => {
+      showDeleteModal.value = false;
+      router.reload({ only: ['categories'] });
+    }
+  });
+};
+
+const initMonthlyConsumptionChart = async () => {
   try {
+    console.log('Attempting to fetch chart data...');
+    console.log('Route URL:', route('categories.chart-data'));
+    
     const response = await axios.get(route('categories.chart-data'));
+    console.log('Full response:', response);
+    console.log('Response data:', response.data);
+    console.log('Response status:', response.status);
+    
+    // Check if response exists and has data
+    if (!response || !response.data) {
+      console.error('No response or response data');
+      return;
+    }
+    
     const monthlyData = response.data.monthlyConsumption;
+    console.log('Monthly data extracted:', monthlyData);
+    
+    if (!monthlyData) {
+      console.error('Monthly consumption data is missing from response');
+      console.log('Available keys in response:', Object.keys(response.data));
+      return;
+    }
+    
+    if (!Array.isArray(monthlyData)) {
+      console.error('Monthly data is not an array:', typeof monthlyData, monthlyData);
+      return;
+    }
 
     const ctx = document.getElementById('monthlyConsumptionChart');
-    if (!ctx) return;
+    if (!ctx) {
+      console.error('Chart canvas element not found');
+      return;
+    }
+
+    // Clear any existing chart
+    const existingChart = Chart.getChart(ctx);
+    if (existingChart) {
+      existingChart.destroy();
+    }
+
+    console.log('Creating chart with data:', monthlyData);
 
     new Chart(ctx, {
       type: 'bar',
       data: {
-        labels: monthlyData.map(item => item.name),
+        labels: monthlyData.map(item => item.name || 'Unknown'),
         datasets: [{
           label: 'Dépenses Mensuelles',
-          data: monthlyData.map(item => item.amount),
+          data: monthlyData.map(item => parseFloat(item.amount) || 0),
           backgroundColor: '#7E22CE',
           borderColor: '#6B21A8',
           borderWidth: 1
@@ -284,18 +321,48 @@
       }
     });
 
+    console.log('Monthly chart created successfully');
+
   } catch (error) {
     console.error('Error initializing monthly chart:', error);
+    if (error.response) {
+      console.error('Error response status:', error.response.status);
+      console.error('Error response data:', error.response.data);
+      console.error('Error response headers:', error.response.headers);
+    } else if (error.request) {
+      console.error('Error request:', error.request);
+    } else {
+      console.error('Error message:', error.message);
+    }
+    console.error('Error config:', error.config);
   }
 };
 
 const initDailyCategoryExpensesChart = async () => {
   try {
     const response = await axios.get(route('categories.chart-data'));
-    const { labels, datasets, currentDay } = response.data.dailyExpenses;
+    console.log('Daily chart data response:', response.data); // Debug log
+    
+    const dailyExpensesData = response.data.dailyExpenses;
+    
+    if (!dailyExpensesData) {
+      console.error('Daily expenses data is not available:', dailyExpensesData);
+      return;
+    }
+
+    const { labels, datasets, currentDay } = dailyExpensesData;
 
     const ctx = document.getElementById('dailyCategoryExpensesChart');
-    if (!ctx) return;
+    if (!ctx) {
+      console.error('Daily chart canvas element not found');
+      return;
+    }
+
+    // Clear any existing chart
+    const existingChart = Chart.getChart(ctx);
+    if (existingChart) {
+      existingChart.destroy();
+    }
 
     new Chart(ctx, {
       type: 'line',
@@ -344,12 +411,16 @@ const initDailyCategoryExpensesChart = async () => {
 
   } catch (error) {
     console.error('Error initializing daily chart:', error);
+    console.error('Error details:', error.response?.data || error.message);
   }
 };
 
-// Call both in onMounted
+// Call both in onMounted with a slight delay to ensure DOM is ready
 onMounted(() => {
-  initMonthlyConsumptionChart();
-  initDailyCategoryExpensesChart();
+  // Add a small delay to ensure the DOM elements are fully rendered
+  setTimeout(() => {
+    initMonthlyConsumptionChart();
+    initDailyCategoryExpensesChart();
+  }, 100);
 });
-  </script>
+</script>

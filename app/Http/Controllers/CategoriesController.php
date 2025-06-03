@@ -7,16 +7,14 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 
-
 class CategoriesController extends Controller
 {
     public function index()
     {
         $user = Auth::user();
-        
         // Create default "Autre" category if it doesn't exist
         $this->createDefaultCategory($user);
-
+        
         // Get all categories with their expenses
         $categories = Category::where('user_id', $user->id)
             ->withSum('expenses as total_expenses', 'amount')
@@ -95,6 +93,7 @@ class CategoriesController extends Controller
         $category->delete();
         return redirect()->back()->with('success', 'Catégorie supprimée');
     }
+
     public function getCategoryChartData()
     {
         $user = Auth::user();
@@ -103,7 +102,7 @@ class CategoriesController extends Controller
         $daysInMonth = $now->daysInMonth;
 
         // 1. Monthly Consumption by Category (Bar Chart)
-        $monthlyData = Category::withSum([
+        $monthlyConsumption = Category::withSum([
             'expenses' => function($query) use ($now) {
                 $query->whereMonth('date', $now->month)
                     ->whereYear('date', $now->year);
@@ -114,7 +113,7 @@ class CategoriesController extends Controller
         ->map(function($category) {
             return [
                 'name' => $category->name,
-                'amount' => (float)$category->expenses_sum_amount
+                'amount' => (float)($category->expenses_sum_amount ?? 0)
             ];
         });
 
@@ -124,12 +123,10 @@ class CategoriesController extends Controller
 
         foreach ($categories as $category) {
             $categoryData = [];
-            
             for ($day = 1; $day <= $daysInMonth; $day++) {
                 $date = Carbon::create($now->year, $now->month, $day);
-                
                 $categoryData[$day] = $day <= $currentDay
-                    ? $category->expenses()
+                    ? (float)$category->expenses()
                         ->whereDate('date', $date)
                         ->sum('amount')
                     : null;
@@ -138,11 +135,12 @@ class CategoriesController extends Controller
             $dailyData[] = [
                 'name' => $category->name,
                 'data' => array_values($categoryData),
-                'color' => $this->generateColor($category->id) // Generate unique color
+                'color' => $this->generateColor($category->id)
             ];
         }
 
         return response()->json([
+            'monthlyConsumption' => $monthlyConsumption, // Fixed: Added this key
             'dailyExpenses' => [
                 'labels' => range(1, $daysInMonth),
                 'datasets' => $dailyData,
@@ -155,7 +153,7 @@ class CategoriesController extends Controller
     private function generateColor($id)
     {
         $colors = [
-            '#7E22CE', '#0D9488', '#2563EB', '#D946EF', 
+            '#7E22CE', '#0D9488', '#2563EB', '#D946EF',
             '#EA580C', '#16A34A', '#9333EA', '#0891B2'
         ];
         return $colors[$id % count($colors)];
